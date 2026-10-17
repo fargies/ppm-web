@@ -1,0 +1,10 @@
+
+[tasks.serve]
+cwd = "src/app"
+command = "npx"
+args = [ "vite", "serve" ]
+
+[tasks."serve:dev"]
+cwd = "src/app"
+command = "npx"
+args = [ "vite", "--", "serve", "-w", "--mode", "dev", "--sourcemap", "true" ]

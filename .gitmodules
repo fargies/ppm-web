@@ -1,0 +1,3 @@
+[submodule "deps/ppm"]
+	path = deps/ppm
+	url = git@github.com:fargies/ppm.git
