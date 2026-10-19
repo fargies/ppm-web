@@ -4,7 +4,20 @@ cwd = "src/app"
 command = "npx"
 args = [ "vite", "serve" ]
 
-[tasks."serve:dev"]
+[tasks."serve:dev:vite"]
 cwd = "src/app"
 command = "npx"
 args = [ "vite", "--", "serve", "-w", "--mode", "dev", "--sourcemap", "true" ]
+
+[tasks."serve:dev:ppm-web"]
+command = "cargo"
+args = [ "run" ]
+
+[tasks."serve:dev:ppm-daemon"]
+cwd = "deps/ppm"
+command = "cargo"
+args = [ "run", "--bin", "ppm-daemon" ]
+env = { "PPM_CONFIG" = "data/test-config.yml", "RUST_LOG" = "ppm::monitor::logger=warn,trace" }
+
+[tasks."serve:dev"]
+run_task = { name = [ "serve:dev:vite", "serve:dev:ppm-web", "serve:dev:ppm-daemon" ], parallel = true, fork = true }

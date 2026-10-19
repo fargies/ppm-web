@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineProps, defineEmits, watch } from "vue";
+import { ref, watch } from "vue";
 import { useWebSocket } from "@vueuse/core";
 import { api_url } from "../Client";
 import { addError } from "../store";
@@ -63,7 +63,7 @@ pre {
         <pre
             :key="idx"
             v-for="(line, idx) in logLines ?? Array(max_lines ?? 3).fill(null)"
-            class="py-0.5 font-mono text-xs skel-anim"
+            class="py-0.5 font-mono text-xs skel-anim wrap-break-word overflow-y-hidden"
             :class="{
                 skel: line === null,
                 'w-6/12': line === null && idx % 3 === 0,

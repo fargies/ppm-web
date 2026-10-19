@@ -10,14 +10,16 @@ const ERRORS_MAX = 10;
 let error_num = 0;
 
 export const servicesInfo = ref(null);
-export const servicesStats = ref({});
+export const servicesStats = ref(null);
 export const serviceNameMap = ref({});
 export const errors = ref([]);
 export const now = ref(DateTime.now());
 
 export const theme = ref(
   localStorage.theme ??
-  window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+    (window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light"),
 );
 
 function setTheme(theme) {
@@ -31,7 +33,7 @@ watch(theme, (theme) => {
   setTheme(theme);
 });
 setTheme(theme.value);
-document.getElementsByTagName('body')[0]?.classList?.add("transition-colors");
+document.getElementsByTagName("body")[0]?.classList?.add("transition-colors");
 
 export function toggleTheme() {
   theme.value = theme.value === "dark" ? "light" : "dark";

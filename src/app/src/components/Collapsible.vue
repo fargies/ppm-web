@@ -1,5 +1,5 @@
 <script setup>
-import { ref, useTemplateRef, watch, defineProps } from "vue";
+import { ref, watch } from "vue";
 import { ChevronDown } from "@lucide/vue";
 
 const { open } = defineProps({
@@ -18,19 +18,19 @@ watch(
 );
 
 function toggle() {
-  state.value = !state.value
+    state.value = !state.value;
 }
 </script>
 <template>
     <details
         :open="state"
-        class="group border-border border-b duration-5000 transition-all"
+        class="group border-border border-b duration-5000 transition-all scrollbar-none overflow-y-hidden"
     >
         <summary
             @click.prevent="toggle"
-            class="focus-visible:ring-2 ring-ring p-1 flex justify-between w-full cursor-pointer list-none items-center text-left font-medium outline-none transition-colors hover:text-muted-foreground focus-visible:accent"
+            class="focus-visible:ring-2 ring-ring p-1 gap-1 flex justify-between w-full cursor-pointer list-none items-center text-left font-medium outline-none transition-colors hover:text-muted-foreground focus-visible:accent"
         >
-            <slot name="summary" />
+            <slot name="summary" :open="state" />
             <div class="justify-end">
                 <ChevronDown
                     class="size-4 shrink-0 text-muted-foreground transition-transform duration-200 ease-out group-open:rotate-180"

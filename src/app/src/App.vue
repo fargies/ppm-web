@@ -4,15 +4,10 @@
 // SPDX-FileContributor: Author: Sylvain Fargier <fargier.sylvain@gmail.com>
 
 import logoUrl from "../../../deps/ppm/data/ppm.svg";
-import { Moon, Sun, X } from "@lucide/vue";
-import { errors, theme, toggleTheme } from "./store";
-import { useRouter } from "vue-router";
+import { Moon, Sun } from "@lucide/vue";
+import { theme, toggleTheme } from "./store";
 
-import { Button } from "./components";
-
-let router = useRouter();
-let h = router.options.history;
-h.state;
+import { Button, ErrorsList } from "./components";
 </script>
 <template>
     <nav
@@ -22,31 +17,12 @@ h.state;
             <img id="logo" class="w-12 h-12" :src="logoUrl" />
             <h1 class="text-accent text-2xl font-bold">PPM</h1>
         </RouterLink>
-        <Button title="theme switch" @click="toggleTheme"><Moon v-if="theme === 'dark'"/><Sun v-else /></Button>
+        <Button title="theme switch" @click="toggleTheme"
+            ><Moon v-if="theme === 'dark'" /><Sun v-else
+        /></Button>
     </nav>
     <div class="grid grid-cols-12 gap-1 col-span-12 p-1">
         <RouterView />
-        <div
-            v-if="errors.length > 0"
-            title="application errors"
-            class="fx-appear col-span-12 border-destructive border rounded shadow-sm p-1 text-destructive"
-        >
-            <div
-                class="flex fx-appear col-span-12 items-center gap-1 hover:bg-foreground/5"
-                :key="error?.id ?? idx"
-                v-for="(error, idx) in errors"
-            >
-                <span class="font-mono text-xs text-muted-foreground"
-                    >[{{ error?.id }}]</span
-                >
-                <span class="grow"
-                    ><span class="font-bold">ERROR: </span>
-                    {{ error?.message ?? error }}</span
-                >
-                <button class="cursor-pointer" @click="errors.splice(idx, 1)">
-                    <X />
-                </button>
-            </div>
-        </div>
+        <ErrorsList />
     </div>
 </template>

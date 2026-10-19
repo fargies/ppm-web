@@ -6,11 +6,11 @@ import vueDevTools from "vite-plugin-vue-devtools";
 // https://vite.dev/config/
 export default defineConfig(({ command, mode }) => {
   if (command == "build") {
-    return { plugins: [vue(), tailwindcss()] };
+    return { plugins: [ vue(), tailwindcss() ] };
   } else {
     return {
       define: { __API_URL__: "\"ws://localhost:3000/ws\"" },
-      plugins: [vue(), tailwindcss(), vueDevTools()],
+      plugins: [ vue(), tailwindcss(), vueDevTools() ],
       build: { sourcemap: true },
     };
   }

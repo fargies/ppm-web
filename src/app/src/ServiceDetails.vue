@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: 2026 Sylvain Fargier
 // SPDX-FileContributor: Author: Sylvain Fargier <fargier.sylvain@gmail.com>
 
-import { defineComponent, defineProps, ref, h, computed } from "vue";
+import { ref, computed } from "vue";
 import { useInterval } from "@vueuse/core";
 import {
     RotateCcw,
@@ -177,7 +177,7 @@ const interval = useInterval(5000, {
                     title="service resource usage statistics"
                     class="grow flex justify-between"
                 >
-                    Statistics<WSState :status="stats_updates" /></div
+                    Resources<WSState :status="stats_updates" /></div
             ></template>
             <div
                 class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-1 p-1"
@@ -189,10 +189,10 @@ const interval = useInterval(5000, {
                     formatDuration(stats?.cpu_time) ?? "?"
                 }}</ServiceInfoPart>
                 <ServiceInfoPart :skel="!stats" title="I/O read">
-                    {{ formatBytes(stats?.io_read) }}/sec
+                    {{ formatBytes(stats?.io_read) ?? "?" }}/sec
                 </ServiceInfoPart>
                 <ServiceInfoPart :skel="!stats" title="I/O write"
-                    >{{ formatBytes(stats?.io_write) }}/sec
+                    >{{ formatBytes(stats?.io_write) ?? "?" }}/sec
                 </ServiceInfoPart>
                 <ServiceInfoPart :skel="!stats" title="I/O read">{{
                     formatBytes(stats?.total_io_read) ?? "?"
@@ -211,11 +211,17 @@ const interval = useInterval(5000, {
         <Collapsible>
             <template #summary
                 ><div title="service logs" class="grow flex justify-between">
-                    Logs <WSState :status="log_updates" />
-                </div></template
-            >
+                    Logs <WSState :status="log_updates" /></div
+            ></template>
             <template #default="{ open }">
-                <ServiceLog v-if="open" :id="id" :max_lines="20" :lines="20" :follow="true" @update="log_updates += 1" />
+                <ServiceLog
+                    v-if="open"
+                    :id="id"
+                    :max_lines="20"
+                    :lines="20"
+                    :follow="true"
+                    @update="log_updates += 1"
+                />
             </template>
         </Collapsible>
     </Card>

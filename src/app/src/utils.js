@@ -8,6 +8,9 @@ export function isNil(value) {
   return value === null || typeof value === "undefined";
 }
 
+/**
+ * @param {?DateTime} date
+ */
 export function formatDate(date) {
   return date?.toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS);
 }
@@ -40,6 +43,12 @@ export function formatBytes(value) {
   }
 }
 
+/**
+ *
+ * @param {DateTime} start_time
+ * @param {DateTime} end_time
+ * @returns String | null
+ */
 export function upTime(start_time, end_time) {
   let duration =
     start_time && end_time

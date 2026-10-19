@@ -9,10 +9,19 @@ import App from "./App.vue";
 
 import ServicesList from "./ServicesList.vue";
 import ServiceDetails from "./ServiceDetails.vue";
+import SchedulerDetails from "./SchedulerDetails.vue";
+import Resources from "./Resources.vue";
 
 const routes = [
   { name: "list", path: "/", component: ServicesList },
-  { name: "service", path: "/service/:id", component: ServiceDetails, props: true },
+  {
+    name: "service",
+    path: "/service/:id",
+    component: ServiceDetails,
+    props: true,
+  },
+  { name: "scheduler", path: "/scheduler", component: SchedulerDetails },
+  { name: "resources", path: "/resources", component: Resources },
 ];
 
 createApp(App)

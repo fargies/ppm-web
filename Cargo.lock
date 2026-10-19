@@ -1814,7 +1814,7 @@ dependencies = [
 
 [[package]]
 name = "partner-pm"
-version = "1.6.0"
+version = "1.7.0"
 dependencies = [
  "anyhow",
  "bitflags",
@@ -1834,14 +1834,11 @@ dependencies = [
  "objc2-core-foundation",
  "objc2-core-services",
  "regex",
- "rust-embed",
- "salvo",
  "serde",
  "serde_json",
  "serde_yaml_ng",
  "sysinfo",
  "tabled",
- "tokio",
  "tracing",
  "tracing-subscriber",
 ]

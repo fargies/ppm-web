@@ -8,3 +8,4 @@ export { default as WSState } from './WSState.vue';
 export { default as ServiceInfoPart } from './ServiceInfoPart.vue';
 export { default as Button } from './Button.vue';
 export { default as Collapsible } from './Collapsible.vue';
+export { default as ErrorsList } from './ErrorsList.vue';

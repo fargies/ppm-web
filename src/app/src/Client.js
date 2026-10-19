@@ -7,7 +7,7 @@ import { DateTime, Duration } from "luxon";
 import debug from "debug";
 
 import { servicesInfo, serviceNameMap, servicesStats, addError } from "./store";
-import { isNil } from './utils';
+import { isNil } from "./utils";
 
 export let api_url;
 if (typeof __API_URL__ === "undefined") {
@@ -28,7 +28,7 @@ export class Client {
 
   constructor(api_url) {
     log("client created");
-    const { status, data, send, open, close, ws } = useWebSocket(api_url, {
+    const { status, send, close, ws } = useWebSocket(api_url, {
       autoReconnect: { delay: 1000 },
       autoClose: false,
       onError(err) {
@@ -39,44 +39,36 @@ export class Client {
           let data = JSON.parse(await event.data.text());
           log("message received", data);
 
+          let update_list = false;
           if (data.hasOwnProperty("error")) {
             addError(data.error);
           } else if (data?.id === "list") {
             serviceNameMap.value = data.result;
           } else if (data?.id === "info") {
-            let update_list = false;
-            for (let id in data.result) {
+            for (const [id, info] of Object.entries(data.result)) {
               if (!serviceNameMap.value?.hasOwnProperty(id)) {
                 update_list = true;
               }
-              let info = data.result[id];
-              if (info.start_time) {
-                info.start_time = DateTime.fromISO(info.start_time);
-              }
 
-              if (info.end_time) {
-                info.end_time = DateTime.fromISO(info.end_time);
-              }
               if (servicesInfo.value === null) {
                 servicesInfo.value = {};
               }
-              servicesInfo.value[id] = info;
-            }
-            // info.value = data.result;
-            if (update_list) {
-              send('{"id":"list","method":"list"}');
+              servicesInfo.value[id] = this.prepare_info(info);
             }
           } else if (data?.id === "stats") {
-            for (let id in data.result) {
-              let stats = data.result[id];
-              if (!isNil(stats.uptime)) {
-                stats.uptime = Duration.fromMillis(stats.uptime / 1e3);
+            for (const [id, stats] of Object.entries(data.result)) {
+              if (!serviceNameMap.value?.hasOwnProperty(id)) {
+                update_list = true;
               }
-              if (!isNil(stats.cpu_time)) {
-                stats.cpu_time = Duration.fromMillis(stats.cpu_time / 1e3);
+
+              if (servicesStats.value === null) {
+                servicesStats.value = {};
               }
-              servicesStats.value[id] = stats;
+              servicesStats.value[id] = this.prepare_stats(stats);
             }
+          }
+          if (update_list) {
+            send('{"id":"list","method":"list"}');
           }
           await this.onMessage?.(data);
         } catch (e) {
@@ -87,6 +79,30 @@ export class Client {
     this.ws = { ws, close, send };
     this.status = status;
     this.onMessage = null;
+  }
+
+  prepare_info(info) {
+    if (info) {
+      if (info.start_time) {
+        info.start_time = DateTime.fromISO(info.start_time);
+      }
+      if (info.end_time) {
+        info.end_time = DateTime.fromISO(info.end_time);
+      }
+    }
+    return info;
+  }
+
+  prepare_stats(stats) {
+    if (stats) {
+      if (!isNil(stats.uptime)) {
+        stats.uptime = Duration.fromMillis(stats.uptime / 1e3);
+      }
+      if (!isNil(stats.cpu_time)) {
+        stats.cpu_time = Duration.fromMillis(stats.cpu_time / 1e3);
+      }
+    }
+    return stats;
   }
 
   /**
@@ -118,6 +134,14 @@ export class Client {
    */
   request_stats(service) {
     this.send({ id: "stats", method: "stats", params: { service } });
+  }
+
+  request_list() {
+    this.send('{"id":"list","method":"list"}');
+  }
+
+  request_clock_check() {
+    this.send('{"id":"clock-check","method":"clock-check"}');
   }
 }
 

@@ -1,4 +1,4 @@
-<style lang="postcss">
+<style lang="css">
 @reference "../style.css";
 
 .badge.success {
