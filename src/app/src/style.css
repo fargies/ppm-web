@@ -27,6 +27,8 @@
     --shadow-xs: var(--shadow-xs);
     --shadow-sm: var(--shadow-sm);
     --color-accent: var(--accent);
+    --color-success: var(--success);
+    --color-failure: var(--destructive);
 }
 
 :root {
@@ -74,19 +76,53 @@
         @apply bg-background font-sans text-foreground;
         accent-color: var(--accent);
     }
+
+    h3 {
+        @apply text-accent font-semibold;
+    }
+
+    button {
+        @apply flex cursor-pointer items-center justify-center text-sm font-medium whitespace-nowrap;
+        @apply gap-1 rounded-md p-1;
+        @apply border border-border;
+        @apply shadow-sm hover:shadow-md;
+        @apply disabled:cursor-default disabled:pointer-events-none disabled:opacity-50;
+        @apply text-foreground hover:bg-foreground/5 active:bg-foreground/15;
+        &.active {
+            @apply not-dark:bg-accent/20 text-accent;
+        }
+    }
+}
+
+@layer components {
+    .button-block {
+        @apply flex gap-0;
+        > :not(last-child) {
+            @apply rounded-e-none border-e-0;
+        }
+        > :not(first-child) {
+            @apply rounded-s-none border-s-0;
+        }
+        > :first-child {
+            @apply rounded-s-md;
+        }
+        > :last-child {
+            @apply rounded-e-md;
+        }
+    }
 }
 
 .table {
     border-collapse: collapse;
-    > .table-header-group > div > div {
+    > .table-header-group > * > * {
         @apply fx-appear text-muted-foreground;
         @apply text-center;
     }
 
-    > .table-row-group > div,
-    > .table-header-group > div {
+    > .table-row-group > *,
+    > .table-header-group > * {
         @apply text-foreground border-border border-b;
-        > div {
+        > * {
             @apply p-1 align-middle;
         }
     }
@@ -98,22 +134,6 @@ svg.lucide {
     height: 1.2em;
     stroke-width: 0.1563em;
     display: inline-block;
-}
-
-@utility bg-success {
-    background-color: var(--success);
-}
-
-@utility text-success {
-    color: var(--success);
-}
-
-@utility text-failure {
-    color: var(--destructive);
-}
-
-@utility text-accent {
-    color: var(--accent);
 }
 
 @keyframes FxAppear {
@@ -131,6 +151,24 @@ svg.lucide {
     animation-name: FxAppear;
     animation-duration: 350ms;
     animation-fill-mode: forwards;
+}
+
+@keyframes FxBlink {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@utility fx-blink {
+    animation-timing-function: ease-in-out;
+    animation-name: FxBlink;
+    animation-duration: 700ms;
+    animation-fill-mode: both;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
 }
 
 @keyframes FxSkeletton {

@@ -36,11 +36,14 @@ client.onMessage = (data) => {
 <template>
     <Card class="col-span-12">
         <template #header>
-            <h3 class="text-accent font-semibold">PPM Resources Info</h3>
+            <h3>PPM Resources Info</h3>
             <div class="flex gap-1 ml-auto">
                 <WSState class="ml-auto" :status="updates" />
-                <RouterLink title="service list" :to="{ name: 'list' }"
-                    ><Button class="border-none!"
+                <RouterLink :to="{ name: 'list' }" custom v-slot="{ navigate }"
+                    ><Button
+                        @click="navigate"
+                        title="service list"
+                        class="border-none!"
                         ><ChevronLeft class="text-accent" /></Button
                 ></RouterLink>
             </div>
@@ -69,7 +72,9 @@ client.onMessage = (data) => {
                     class="table-row skel-anim fx-appear text-center hover:bg-foreground/5"
                 >
                     <div class="table-cell"></div>
-                    <div class="hidden sm:table-cell font-mono text-muted-foreground">
+                    <div
+                        class="hidden sm:table-cell font-mono text-muted-foreground"
+                    >
                         &lt;PPM daemon&gt;
                     </div>
 
@@ -122,10 +127,14 @@ client.onMessage = (data) => {
                     "
                 >
                     <template v-if="servicesStats && isNil(info?.uptime)">
-                        <div class="table-cell font-mono text-muted-foreground/60">
+                        <div
+                            class="table-cell font-mono text-muted-foreground/60"
+                        >
                             {{ id ?? "" }}
                         </div>
-                        <div class="hidden sm:table-cell font-mono text-muted-foreground/60">
+                        <div
+                            class="hidden sm:table-cell font-mono text-muted-foreground/60"
+                        >
                             {{ serviceNameMap?.[id] ?? "" }}
                         </div>
                         <div class="table-cell"></div>

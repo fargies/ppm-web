@@ -45,11 +45,14 @@ useInterval(5000, {
 <template>
     <Card class="col-span-12">
         <template #header
-            ><h3 class="text-accent font-semibold">PPM Scheduler Info</h3>
+            ><h3>PPM Scheduler Info</h3>
             <div class="flex gap-1 ml-auto">
                 <WSState class="ml-auto" :status="updates" />
-                <RouterLink title="service list" :to="{ name: 'list' }"
-                    ><Button class="border-none!"
+                <RouterLink :to="{ name: 'list' }" custom v-slot="{ navigate }"
+                    ><Button
+                        @click="navigate"
+                        title="service list"
+                        class="border-none!"
                         ><ChevronLeft class="text-accent" /></Button
                 ></RouterLink>
             </div>

@@ -11,6 +11,7 @@ import ServicesList from "./ServicesList.vue";
 import ServiceDetails from "./ServiceDetails.vue";
 import SchedulerDetails from "./SchedulerDetails.vue";
 import Resources from "./Resources.vue";
+import DaemonLogs from "./DaemonLogs.vue";
 
 const routes = [
   { name: "list", path: "/", component: ServicesList },
@@ -22,6 +23,7 @@ const routes = [
   },
   { name: "scheduler", path: "/scheduler", component: SchedulerDetails },
   { name: "resources", path: "/resources", component: Resources },
+  { name: "daemonlogs", path: "/daemonlogs", component: DaemonLogs },
 ];
 
 createApp(App)

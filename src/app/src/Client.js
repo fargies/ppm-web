@@ -22,7 +22,7 @@ var log = debug("client");
 
 export class Client {
   ws;
-  status = "UNKNOWN";
+  status;
   /** @type {null|async (data: any)=>any} */
   onMessage = null;
 

@@ -4,10 +4,24 @@
 // SPDX-FileContributor: Author: Sylvain Fargier <fargier.sylvain@gmail.com>
 
 import logoUrl from "../../../deps/ppm/data/ppm.svg";
-import { Moon, Sun } from "@lucide/vue";
+import {
+    BadgeAlert,
+    BadgeCheck,
+    GlobeCheck,
+    GlobeX,
+    Link,
+    Moon,
+    Sun,
+    Unlink,
+} from "@lucide/vue";
 import { theme, toggleTheme } from "./store";
 
 import { Button, ErrorsList } from "./components";
+
+import { client } from "./Client";
+import { computed } from "vue";
+
+const connected = computed(() => client?.status?.value === "OPEN");
 </script>
 <template>
     <nav
@@ -17,9 +31,22 @@ import { Button, ErrorsList } from "./components";
             <img id="logo" class="w-12 h-12" :src="logoUrl" />
             <h1 class="text-accent text-2xl font-bold">PPM</h1>
         </RouterLink>
-        <Button title="theme switch" @click="toggleTheme"
-            ><Moon v-if="theme === 'dark'" /><Sun v-else
-        /></Button>
+        <div class="flex gap-2 align-middle">
+            <span
+                :title="`connection status: ${client?.status?.value}`"
+                :class="{ 'fx-blink': !connected }"
+                aria-label="connection status"
+            >
+                <GlobeCheck
+                    v-if="connected"
+                    class="fx-appear text-success/40"
+                />
+                <GlobeX v-else class="fx-blink text-failure/60" />
+            </span>
+            <Button title="theme switch" @click="toggleTheme"
+                ><Moon v-if="theme === 'dark'" /><Sun v-else
+            /></Button>
+        </div>
     </nav>
     <div class="grid grid-cols-12 gap-1 col-span-12 p-1">
         <RouterView />

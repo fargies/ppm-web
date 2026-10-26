@@ -22,7 +22,7 @@
 
 use std::{net::SocketAddr, sync::Arc};
 
-use anyhow::{Context, Error, Result, anyhow};
+use anyhow::{Context, Result, anyhow};
 use clap::Parser;
 use ppm::api::ActionResult;
 use ppm::utils::pre_json::JsonPreParser;
@@ -143,7 +143,7 @@ async fn ws_raw(
                 buffer.clear();
                 match
                 stream.try_read_buf(&mut buffer) {
-                    Ok(0) => return Err(Error::msg("remote connection closed")),
+                    Ok(0) => return Err(anyhow!("remote connection closed")),
                     Ok(_) => (),
                     Err(ref e) if e.kind() == tokio::io::ErrorKind::WouldBlock => {
                         continue;
@@ -152,7 +152,6 @@ async fn ws_raw(
                         return Err(e.into());
                     }
                 }
-                tracing::warn!(log = ?String::from_utf8_lossy(buffer.as_slice()));
                 ws.send(Message::binary(Bytes::copy_from_slice(buffer.as_slice()))).await?;
             }
         }
@@ -194,6 +193,7 @@ async fn connect(req: &mut Request, res: &mut Response, depot: &Depot) -> Result
                     ))
                     .await;
             };
+            let _ = ws.close().await;
             tracing::trace!(remote_addr=?remote_addr, "websocket closed");
         })
         .await

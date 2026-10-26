@@ -4,7 +4,8 @@
 // SPDX-FileContributor: Author: Sylvain Fargier <fargier.sylvain@gmail.com>
 
 defineProps({
-    label: { type: String, default: "" },
+  label: { type: String, default: "" },
+    active: { type: Boolean, default: false },
     skel: { type: Boolean, default: false },
 });
 </script>
@@ -12,8 +13,8 @@ defineProps({
     <button
         :label="label"
         :aria-label="label"
-        class="skel-anim w-fit h-fit duration-300 cursor-pointer inline-flex shrink-0 items-center justify-center border text-sm font-medium whitespace-nowrap shadow-sm hover:shadow-md transition-all disabled:cursor-default disabled:pointer-events-none disabled:opacity-50 border-border text-foreground hover:bg-foreground/5 active:bg-foreground/15 gap-1 rounded-md p-1"
-        :class="{ skel }"
+        class="skel-anim w-fit h-fill duration-300 shrink-0 transition-all"
+        :class="{ skel, active }"
     >
         <slot />
     </button>

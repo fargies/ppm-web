@@ -70,25 +70,38 @@ const interval = useInterval(5000, {
             <h3
                 title="service name"
                 :class="{ skel: !serviceNameMap?.[id] }"
-                class="skel-anim font-semibold text-2xl text-accent"
+                class="skel-anim text-2xl"
             >
                 {{ serviceNameMap?.[id] ?? "placeholder" }}
             </h3>
             <div class="flex gap-1 ml-auto">
                 <RouterLink
-                    title="previous service"
                     :to="{ params: { id: prevService } }"
-                    ><Button :disabled="isNil(prevService)" class="border-none!"
+                    custom
+                    v-slot="{ navigate }"
+                    ><Button
+                        @click="navigate"
+                        title="previous service"
+                        :disabled="isNil(prevService)"
+                        class="border-none!"
                         ><ChevronLeft class="text-accent" /></Button
                 ></RouterLink>
-                <RouterLink title="service list" :to="{ name: 'list' }"
-                    ><Button class="border-none!"
+                <RouterLink :to="{ name: 'list' }" custom v-slot="{ navigate }"
+                    ><Button
+                        @click="navigate"
+                        title="service list"
+                        class="border-none!"
                         ><ChevronUp class="text-accent" /></Button
                 ></RouterLink>
                 <RouterLink
-                    title="next service"
                     :to="{ params: { id: nextService } }"
-                    ><Button :disabled="isNil(nextService)" class="border-none!"
+                    custom
+                    v-slot="{ navigate }"
+                    ><Button
+                        @click="navigate"
+                        title="next service"
+                        :disabled="isNil(nextService)"
+                        class="border-none!"
                         ><ChevronRight class="text-accent" /></Button
                 ></RouterLink>
             </div>
@@ -105,6 +118,7 @@ const interval = useInterval(5000, {
                     label="Stop"
                     @click="
                         client.send({
+                            id: 'stop',
                             method: 'stop',
                             params: { service: id },
                         })
@@ -118,6 +132,7 @@ const interval = useInterval(5000, {
                     title="(re)start and activate the service"
                     @click="
                         client.send({
+                            id: 'restart',
                             method: 'restart',
                             params: { service: id },
                         })

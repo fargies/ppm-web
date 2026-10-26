@@ -11,6 +11,7 @@ import Badge from "./components/Badge.vue";
 import {
     Activity,
     CheckSquare,
+    Logs,
     RotateCcw,
     Skull,
     SquareX,
@@ -46,32 +47,36 @@ function upTime(start_time, end_time) {
 <template>
     <Card class="col-span-12">
         <template #header>
-            <h3 class="text-accent font-semibold">PPM Service Info</h3>
+            <h3>PPM Service Info</h3>
             <WSState class="ml-auto" :status="updates" />
         </template>
-        <div class="w-full px-3 table table-auto text-sm">
-            <div class="table-header-group">
-                <div class="table-row">
-                    <div class="table-cell">Id</div>
-                    <div class="table-cell">Name</div>
-                    <div class="hidden sm:table-cell">Pid</div>
-                    <div class="table-cell">Active</div>
-                    <div class="table-cell">Status</div>
-                    <div class="sm:table-cell hidden">Start time</div>
-                    <div class="table-cell">Uptime</div>
-                    <div class="table-cell">
+        <table role="table" class="w-full px-3 table table-auto text-sm">
+            <thead class="table-header-group">
+                <tr>
+                    <th class="table-cell">Id</th>
+                    <th class="table-cell">Name</th>
+                    <th class="hidden sm:table-cell">Pid</th>
+                    <th class="table-cell">Active</th>
+                    <th class="table-cell">Status</th>
+                    <th class="sm:table-cell hidden">Start time</th>
+                    <th class="table-cell">Uptime</th>
+                    <th
+                        aria-label="Restarts"
+                        title="Restarts"
+                        class="table-cell"
+                    >
                         <RotateCcw aria-label="Restarts" />
-                    </div>
-                    <div class="table-cell">
+                    </th>
+                    <th aria-label="Crashes" title="Crashes" class="table-cell">
                         <Skull arial-label="Crashes" />
-                    </div>
-                </div>
-            </div>
-            <div
+                    </th>
+                </tr>
+            </thead>
+            <tbody
                 :class="{ skel: !servicesInfo }"
                 class="table-row-group skel-anim"
             >
-                <div
+                <tr
                     v-for="(info, id) in servicesInfo || {
                         0: null,
                         1: null,
@@ -79,6 +84,7 @@ function upTime(start_time, end_time) {
                     }"
                     :key="id"
                     :class="{ 'fx-appear': servicesInfo }"
+                    tabindex="0"
                     class="table-row text-center hover:bg-foreground/5 cursor-pointer"
                     @click="
                         $router.push({
@@ -86,53 +92,95 @@ function upTime(start_time, end_time) {
                             params: { id },
                         })
                     "
+                    @keydown.enter="(e) => e.target.click()"
                 >
-                    <div class="table-cell font-mono">{{ id }}</div>
-                    <div class="table-cell font-mono">
+                    <td aria-label="Id" class="table-cell font-mono">
+                        {{ id }}
+                    </td>
+                    <td aria-label="Name" class="table-cell font-mono">
                         {{ serviceNameMap?.[id] ?? "?" }}
-                    </div>
-                    <div class="hidden sm:table-cell font-mono">
+                    </td>
+                    <td aria-label="Pid" class="hidden sm:table-cell font-mono">
                         {{ info?.pid }}
-                    </div>
-                    <div class="table-cell">
+                    </td>
+                    <td
+                        aria-label="Active"
+                        :aria-valuenow="info?.active"
+                        class="table-cell"
+                    >
                         <CheckSquare class="text-success" v-if="info?.active" />
                         <SquareX v-else class="text-failure" />
-                    </div>
-                    <div class="table-cell">
+                    </td>
+                    <td
+                        aria-label="Status"
+                        :aria-valuenow="info?.status"
+                        class="table-cell"
+                    >
                         <Badge :class="mapStatusBadge(info?.status)">{{
                             info?.status
                         }}</Badge>
-                    </div>
-                    <div class="sm:table-cell hidden">
+                    </td>
+                    <td aria-label="Start time" class="sm:table-cell hidden">
                         {{ formatDate(info?.start_time) ?? "?" }}
-                    </div>
-                    <div
+                    </td>
+                    <td
                         class="table-cell"
+                        aria-label="Uptime"
                         :style="`min-width: ${uptime_width}ch`"
                     >
                         {{
                             upTime(info?.start_time, info?.end_time ?? now) ??
                             "?"
                         }}
-                    </div>
-                    <div class="table-cell">{{ info?.restarts }}</div>
-                    <div class="table-cell">{{ info?.crashed }}</div>
-                </div>
-            </div>
-        </div>
+                    </td>
+                    <td aria-label="Restarts" class="table-cell">
+                        {{ info?.restarts }}
+                    </td>
+                    <td aria-label="Crashes" class="table-cell">
+                        {{ info?.crashed }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
         <div class="fx-appear flex p-1 gap-1 justify-end">
-            <RouterLink :to="{ name: 'scheduler' }">
+            <RouterLink
+                :to="{ name: 'daemonlogs' }"
+                custom
+                v-slot="{ navigate }"
+            >
                 <Button
+                    @click="navigate"
+                    class="text-xs"
+                    title="server logs"
+                    label="server logs"
+                    ><Logs />Server Logs
+                </Button>
+            </RouterLink>
+            <RouterLink
+                :to="{ name: 'scheduler' }"
+                custom
+                v-slot="{ navigate }"
+            >
+                <Button
+                    @click="navigate"
                     class="text-xs"
                     title="scheduler information"
                     label="scheduler"
-                    ><Timer />Scheduler</Button
-                ></RouterLink
+                    ><Timer />Scheduler
+                </Button>
+            </RouterLink>
+            <RouterLink
+                :to="{ name: 'resources' }"
+                custom
+                v-slot="{ navigate }"
             >
-            <RouterLink :to="{ name: 'resources' }">
-                <Button class="text-xs" title="statistics" label="statistics"
-                    ><Activity />Resources</Button
-                >
+                <Button
+                    @click="navigate"
+                    class="text-xs"
+                    title="statistics"
+                    label="statistics"
+                    ><Activity />Resources
+                </Button>
             </RouterLink>
         </div>
     </Card>
