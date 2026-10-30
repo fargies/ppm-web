@@ -82,9 +82,10 @@ function upTime(start_time, end_time) {
                         1: null,
                         2: null,
                     }"
+                    role="link"
+                    tabindex="0"
                     :key="id"
                     :class="{ 'fx-appear': servicesInfo }"
-                    tabindex="0"
                     class="table-row text-center hover:bg-foreground/5 cursor-pointer"
                     @click="
                         $router.push({
@@ -177,8 +178,8 @@ function upTime(start_time, end_time) {
                 <Button
                     @click="navigate"
                     class="text-xs"
-                    title="statistics"
-                    label="statistics"
+                    title="resources statistics"
+                    label="resources"
                     ><Activity />Resources
                 </Button>
             </RouterLink>

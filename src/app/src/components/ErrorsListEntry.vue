@@ -58,6 +58,8 @@ pre {
         </div>
         <div class="ml-auto mb-auto mt-1 pe-1">
             <Button
+                title="dismiss error"
+                label="dismiss error"
                 class="cursor-pointer border-none!"
                 @click="errors.splice(index, 1)"
             >

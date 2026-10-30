@@ -52,6 +52,15 @@ export function addError(err) {
   errors.value.push(err);
 }
 
+export function save(name, value) {
+  localStorage[name] = JSON.stringify(value);
+}
+
+export function restore(name, default_value = null) {
+  let value = localStorage[name];
+  return typeof value === "string" ? JSON.parse(value) : default_value;
+}
+
 useInterval(1000, {
   callback() {
     now.value = DateTime.now();

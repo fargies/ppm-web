@@ -24,7 +24,7 @@ function toggle() {
 <template>
     <details
         :open="state"
-        class="group border-border border-b duration-5000 transition-all scrollbar-none overflow-y-hidden"
+        class="group border-border not-last:border-b duration-5000 transition-all scrollbar-none overflow-y-hidden"
     >
         <summary
             @click.prevent="toggle"

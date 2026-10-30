@@ -3,16 +3,17 @@
 // SPDX-FileCopyrightText: 2026 Sylvain Fargier
 // SPDX-FileContributor: Author: Sylvain Fargier <fargier.sylvain@gmail.com>
 
-import { ref } from "vue";
-import { ChevronLeft, ToggleRight, ToggleLeft, Pause, Play, Infinity } from "@lucide/vue";
+import { ref, watch } from "vue";
+import { ChevronLeft, Pause, Play, Infinity } from "@lucide/vue";
 import { Card, WSState, Button } from "./components";
-
+import { save, restore } from "./store";
 import ServiceLog from "./components/ServiceLog.vue";
 
 const updates = ref(0);
 const paused = ref(false);
-const preserve_lines = ref(false);
-const max_lines = ref(20);
+const max_lines = ref(restore("server_log_max_lines", 20));
+
+watch(max_lines, (max_lines) => save("server_log_max_lines", max_lines));
 </script>
 <template>
     <Card class="col-span-12">
@@ -28,9 +29,18 @@ const max_lines = ref(20);
                     <template v-else><Pause />Pause</template>
                 </Button>
                 <div title="log lines to keep" class="button-block">
-                    <Button :active="max_lines === 20" @click="max_lines = 20">20</Button>
-                    <Button :active="max_lines === 80" @click="max_lines = 80">80</Button>
-                    <Button :active="max_lines === null" aria-label="infinite" @click="max_lines = null"><Infinity/></Button>
+                    <Button :active="max_lines === 20" @click="max_lines = 20"
+                        >20</Button
+                    >
+                    <Button :active="max_lines === 80" @click="max_lines = 80"
+                        >80</Button
+                    >
+                    <Button
+                        :active="max_lines === null"
+                        aria-label="infinite"
+                        @click="max_lines = null"
+                        ><Infinity
+                    /></Button>
                 </div>
                 <RouterLink :to="{ name: 'list' }" custom v-slot="{ navigate }"
                     ><Button
@@ -45,7 +55,7 @@ const max_lines = ref(20);
             <ServiceLog
                 id="ppm-daemon"
                 :max_lines="max_lines"
-                :lines="20"
+                :lines="max_lines"
                 :follow="true"
                 :paused="paused"
                 @update="updates += 1"

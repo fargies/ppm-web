@@ -48,68 +48,70 @@ client.onMessage = (data) => {
                 ></RouterLink>
             </div>
         </template>
-        <div class="w-full px-3 table table-auto text-sm">
-            <div class="table-header-group">
-                <div class="table-row">
-                    <div class="table-cell">Id</div>
-                    <div class="hidden sm:table-cell">Name</div>
-                    <div class="table-cell">CPU</div>
-                    <div class="table-cell">CPU time</div>
-                    <div class="table-cell">I/O read</div>
-                    <div class="table-cell">I/O write</div>
-                    <div class="table-cell">Mem RSS</div>
-                    <div class="table-cell">Mem VSZ</div>
-                    <div class="hidden sm:table-cell">Uptime</div>
-                </div>
-            </div>
-            <div
+        <table role="table" class="w-full px-3 table table-auto text-sm">
+            <thead class="table-header-group">
+                <tr class="table-row">
+                    <th class="table-cell">Id</th>
+                    <th class="hidden sm:table-cell">Name</th>
+                    <th class="table-cell">CPU</th>
+                    <th class="table-cell">CPU time</th>
+                    <th class="table-cell">I/O read</th>
+                    <th class="table-cell">I/O write</th>
+                    <th class="table-cell">Mem RSS</th>
+                    <th class="table-cell">Mem VSZ</th>
+                    <th class="hidden sm:table-cell">Uptime</th>
+                </tr>
+            </thead>
+            <tbody
                 :class="{ skel: !servicesStats }"
                 class="table-row-group skel-anim"
             >
-                <div
+                <tr
                     v-if="!isNil(daemonStats)"
                     key="daemon-stats"
                     class="table-row skel-anim fx-appear text-center hover:bg-foreground/5"
                 >
-                    <div class="table-cell"></div>
-                    <div
+                    <td class="table-cell"></td>
+                    <td
                         class="hidden sm:table-cell font-mono text-muted-foreground"
                     >
                         &lt;PPM daemon&gt;
-                    </div>
+                    </td>
 
-                    <div class="table-cell">
+                    <td class="table-cell">
                         {{ daemonStats?.cpu_usage?.toFixed(2) }}%
-                    </div>
-                    <div class="table-cell">
+                    </td>
+                    <td class="table-cell">
                         {{ formatDuration(daemonStats?.cpu_time) ?? "?" }}
-                    </div>
-                    <div class="table-cell">
+                    </td>
+                    <td class="table-cell">
                         <div>{{ formatBytes(daemonStats?.io_read) }}/sec</div>
                         <div>{{ formatBytes(daemonStats?.total_io_read) }}</div>
-                    </div>
-                    <div class="table-cell">
+                    </td>
+                    <td class="table-cell">
                         <div>{{ formatBytes(daemonStats?.io_write) }}/sec</div>
                         <div>
                             {{ formatBytes(daemonStats?.total_io_write) }}
                         </div>
-                    </div>
-                    <div class="table-cell">
+                    </td>
+                    <td class="table-cell">
                         {{ formatBytes(daemonStats?.mem_rss) }}
-                    </div>
-                    <div class="table-cell">
+                    </td>
+                    <td class="table-cell">
                         {{ formatBytes(daemonStats?.mem_vsz) }}
-                    </div>
-                    <div class="hidden sm:table-cell">
+                    </td>
+                    <td class="hidden sm:table-cell">
                         {{ formatDuration(daemonStats?.uptime) }}
-                    </div>
-                </div>
-                <div
+                    </td>
+                </tr>
+                <tr
                     v-for="(info, id) in servicesStats || {
                         0: null,
                         1: null,
                         2: null,
                     }"
+                    role="link"
+                    tabindex="0"
                     :key="id"
                     :class="{
                         'fx-appear': servicesStats,
@@ -125,57 +127,58 @@ client.onMessage = (data) => {
                             });
                         }
                     "
+                    @keydown.enter="(e) => e.target.click()"
                 >
                     <template v-if="servicesStats && isNil(info?.uptime)">
-                        <div
+                        <td
                             class="table-cell font-mono text-muted-foreground/60"
                         >
                             {{ id ?? "" }}
-                        </div>
-                        <div
+                        </td>
+                        <td
                             class="hidden sm:table-cell font-mono text-muted-foreground/60"
                         >
                             {{ serviceNameMap?.[id] ?? "" }}
-                        </div>
-                        <div class="table-cell"></div>
-                        <div class="table-cell"></div>
-                        <div class="table-cell"></div>
-                        <div class="table-cell"></div>
-                        <div class="table-cell"></div>
-                        <div class="table-cell"></div>
-                        <div class="hidden sm:table-cell"></div>
+                        </td>
+                        <td class="table-cell"></td>
+                        <td class="table-cell"></td>
+                        <td class="table-cell"></td>
+                        <td class="table-cell"></td>
+                        <td class="table-cell"></td>
+                        <td class="table-cell"></td>
+                        <td class="hidden sm:table-cell"></td>
                     </template>
                     <template v-else>
-                        <div class="table-cell font-mono">{{ id ?? "" }}</div>
-                        <div class="hidden sm:table-cell font-mono">
+                        <td class="table-cell font-mono">{{ id ?? "" }}</td>
+                        <td class="hidden sm:table-cell font-mono">
                             {{ serviceNameMap?.[id] ?? "" }}
-                        </div>
-                        <div class="table-cell">
+                        </td>
+                        <td class="table-cell">
                             {{ info?.cpu_usage?.toFixed(2) }}%
-                        </div>
-                        <div class="table-cell">
+                        </td>
+                        <td class="table-cell">
                             {{ formatDuration(info?.cpu_time) ?? "?" }}
-                        </div>
-                        <div class="table-cell">
+                        </td>
+                        <td class="table-cell">
                             <div>{{ formatBytes(info?.io_read) }}/sec</div>
                             <div>{{ formatBytes(info?.total_io_read) }}</div>
-                        </div>
-                        <div class="table-cell">
+                        </td>
+                        <td class="table-cell">
                             <div>{{ formatBytes(info?.io_write) }}/sec</div>
                             <div>{{ formatBytes(info?.total_io_write) }}</div>
-                        </div>
-                        <div class="table-cell">
+                        </td>
+                        <td class="table-cell">
                             {{ formatBytes(info?.mem_rss) }}
-                        </div>
-                        <div class="table-cell">
+                        </td>
+                        <td class="table-cell">
                             {{ formatBytes(info?.mem_vsz) }}
-                        </div>
-                        <div class="hidden sm:table-cell">
+                        </td>
+                        <td class="hidden sm:table-cell">
                             {{ formatDuration(info?.uptime) }}
-                        </div>
+                        </td>
                     </template>
-                </div>
-            </div>
-        </div>
+                </tr>
+            </tbody>
+        </table>
     </Card>
 </template>

@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: 2026 Sylvain Fargier
 // SPDX-FileContributor: Author: Sylvain Fargier <fargier.sylvain@gmail.com>
 
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useInterval } from "@vueuse/core";
 import {
     RotateCcw,
@@ -14,9 +14,18 @@ import {
     ChevronUp,
     CheckSquare,
     SquareX,
+    Infinity,
+    Pause,
 } from "@lucide/vue";
 import { client } from "./Client";
-import { servicesInfo, serviceNameMap, now, servicesStats } from "./store";
+import {
+    servicesInfo,
+    serviceNameMap,
+    now,
+    servicesStats,
+    save,
+    restore,
+} from "./store";
 import {
     Card,
     WSState,
@@ -39,6 +48,9 @@ let { id } = defineProps({ id: String });
 const info_updates = ref(0);
 const stats_updates = ref(0);
 const log_updates = ref(0);
+const paused = ref(false);
+const max_lines = ref(restore("service_log_max_lines", 20));
+
 const info = computed(() => servicesInfo.value?.[id]);
 const stats = computed(() => servicesStats.value?.[id]);
 const nextService = computed(() =>
@@ -47,6 +59,8 @@ const nextService = computed(() =>
 const prevService = computed(() =>
     Object.keys(serviceNameMap.value).findLast((i) => i < id),
 );
+
+watch(max_lines, (max_lines) => save("service_log_max_lines", max_lines));
 
 client.onMessage = (data) => {
     if (data?.id === "info") {
@@ -224,16 +238,54 @@ const interval = useInterval(5000, {
             </div>
         </Collapsible>
         <Collapsible>
-            <template #summary
-                ><div title="service logs" class="grow flex justify-between">
-                    Logs <WSState :status="log_updates" /></div
-            ></template>
+            <template #summary="{ open }">
+                <div title="service logs" class="grow flex justify-between">
+                    Logs
+                    <div class="flex gap-1 ml-auto align-middle items-center">
+                        <WSState :status="log_updates" />
+                        <Button
+                            v-show="open"
+                            @click.stop="paused = !paused"
+                            title="pause log stream"
+                            class="fx-appear"
+                            :class="{ active: paused }"
+                            ><template v-if="paused">
+                                <Play /> Continue
+                            </template>
+                            <template v-else><Pause />Pause</template>
+                        </Button>
+                        <div
+                            v-show="open"
+                            title="log lines to keep"
+                            class="fx-appear button-block"
+                        >
+                            <Button
+                                :active="max_lines === 20"
+                                @click.stop="max_lines = 20"
+                                >20</Button
+                            >
+                            <Button
+                                :active="max_lines === 80"
+                                @click.stop="max_lines = 80"
+                                >80</Button
+                            >
+                            <Button
+                                :active="max_lines === null"
+                                aria-label="infinite"
+                                @click.stop="max_lines = null"
+                                ><Infinity
+                            /></Button>
+                        </div>
+                    </div>
+                </div>
+            </template>
             <template #default="{ open }">
                 <ServiceLog
                     v-if="open"
                     :id="id"
-                    :max_lines="20"
-                    :lines="20"
+                    :max_lines="max_lines"
+                    :lines="max_lines"
+                    :paused="paused"
                     :follow="true"
                     @update="log_updates += 1"
                 />

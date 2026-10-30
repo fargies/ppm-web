@@ -1,14 +1,22 @@
 <script setup>
+// SPDX-License-Identifier: Zlib
+// SPDX-FileCopyrightText: 2026 Sylvain Fargier
+// SPDX-FileContributor: Author: Sylvain Fargier <fargier.sylvain@gmail.com>
+
 import { ref, watch } from "vue";
 import { useWebSocket } from "@vueuse/core";
 import { api_url } from "../Client";
 import { addError } from "../store";
+import LogLine from "./LogLine.vue";
 
 /** @typedef {Array<{ line: string, idx: number }>} LogArray */
 
 const log_lines = ref(/** @type {null|LogArray} */ (null));
 const captured = ref(/** @type {null|LogArray} */ (null));
-let line_idx = 1000;
+
+const MAX_LINES_MAX = 10000; // "infinite" log lines is not really infinite (preserve RAM)
+const MAX_LINES_FETCH = 4096; // max lines to initially fetch
+let line_idx = 0;
 let last_line_complete = true;
 
 const { id, lines, follow, max_lines, paused } = defineProps({
@@ -21,11 +29,7 @@ const { id, lines, follow, max_lines, paused } = defineProps({
 const emit = defineEmits(["update"]);
 watch(
     () => max_lines,
-    (max_lines) => {
-        if (max_lines !== null) {
-            log_lines.value.splice(0, log_lines.value.length - max_lines);
-        }
-    },
+    (max_lines) => drop_lines(max_lines),
 );
 watch(
     () => paused,
@@ -38,6 +42,17 @@ watch(
         }
     },
 );
+
+/**
+ *
+ * @param max_lines {Number|null}
+ */
+function drop_lines(max_lines) {
+    let max = max_lines ?? MAX_LINES_MAX;
+    if (max !== null && log_lines.value.length > max) {
+        log_lines.value.splice(0, log_lines.value.length - max);
+    }
+}
 
 function log_stream() {
     let { close, send } = useWebSocket(api_url + "?raw=1", {
@@ -71,9 +86,7 @@ function log_stream() {
             for (let line of new_lines) {
                 log_lines.value.push({ idx: line_idx++, line: line });
             }
-            if (max_lines !== null && log_lines.value.length > max_lines) {
-                log_lines.value.splice(0, log_lines.value.length - max_lines);
-            }
+            drop_lines(max_lines);
             emit("update");
         },
         onDisconnected() {
@@ -83,7 +96,11 @@ function log_stream() {
             send?.(
                 JSON.stringify({
                     method: "log",
-                    params: { service: id, lines, follow },
+                    params: {
+                        service: id,
+                        lines: lines ?? MAX_LINES_FETCH,
+                        follow,
+                    },
                 }),
             );
         },
@@ -116,18 +133,18 @@ pre {
 </style>
 <template>
     <div class="p-1 w-full overflow-y-clip">
-        <pre
+        <LogLine
             :key="idx"
             v-for="{ idx, line } in captured ??
             log_lines ??
             create_placeholder()"
-            class="py-0.5 font-mono text-xs skel-anim wrap-break-word overflow-y-hidden fx-appear"
+            :line="line ?? ''"
             :class="{
                 skel: line === null,
                 'w-6/12': line === null && idx % 3 === 0,
                 'w-5/12': line === null && idx % 3 === 1,
                 'w-8/12': line === null && idx % 3 === 2,
             }"
-            >{{ (line ?? "placeholder") || " " }}</pre>
+        />
     </div>
 </template>

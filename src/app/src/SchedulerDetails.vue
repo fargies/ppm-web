@@ -57,25 +57,27 @@ useInterval(5000, {
                 ></RouterLink>
             </div>
         </template>
-        <div class="w-full px-3 table table-auto text-sm">
-            <div class="table-header-group">
-                <div class="table-row">
-                    <div class="table-cell">Id</div>
-                    <div class="table-cell">Name</div>
-                    <div class="table-cell">Event</div>
-                    <div class="table-cell">Scheduled Time</div>
-                </div>
-            </div>
-            <div
+        <table role="table" class="w-full px-3 table table-auto text-sm">
+            <thead class="table-header-group">
+                <tr>
+                    <th class="table-cell">Id</th>
+                    <th class="table-cell">Name</th>
+                    <th class="table-cell">Event</th>
+                    <th class="table-cell">Scheduled Time</th>
+                </tr>
+            </thead>
+            <tbody
                 :class="{ skel: !schedulerInfo }"
                 class="table-row-group skel-anim"
             >
-                <div
+                <tr
                     v-for="(info, id) in schedulerInfo || {
                         0: null,
                         1: null,
                         2: null,
                     }"
+                    role="link"
+                    tabindex="0"
                     :key="id"
                     :class="{
                         'fx-appear': schedulerInfo,
@@ -90,19 +92,20 @@ useInterval(5000, {
                             });
                         }
                     "
+                    @keydown.enter="(e) => e.target.click()"
                 >
-                    <div class="table-cell font-mono">{{ info?.id ?? "" }}</div>
-                    <div class="table-cell font-mono">
+                    <td class="table-cell font-mono">{{ info?.id ?? "" }}</td>
+                    <td class="table-cell font-mono">
                         {{ serviceNameMap?.[info?.id] ?? "" }}
-                    </div>
-                    <div class="table-cell">
+                    </td>
+                    <td class="table-cell">
                         {{ info?.event ?? "?" }}
-                    </div>
-                    <div class="table-cell">
+                    </td>
+                    <td class="table-cell">
                         {{ formatDate(info?.instant) ?? "" }}
-                    </div>
-                </div>
-            </div>
-        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </Card>
 </template>

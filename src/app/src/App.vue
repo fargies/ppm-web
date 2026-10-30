@@ -28,7 +28,7 @@ const connected = computed(() => client?.status?.value === "OPEN");
         class="sticky z-100 flex w-full justify-between mb-1 px-1 shadow-sm gap-2 top-0 left-0 items-center border-b border-border bg-background"
     >
         <RouterLink class="flex gap-1 items-center" :to="{ name: 'list' }">
-            <img id="logo" class="w-12 h-12" :src="logoUrl" />
+            <img id="logo" class="w-12 h-12" :src="logoUrl" alt="PPM logo" />
             <h1 class="text-accent text-2xl font-bold">PPM</h1>
         </RouterLink>
         <div class="flex gap-2 align-middle">

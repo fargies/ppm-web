@@ -29,6 +29,14 @@
     --color-accent: var(--accent);
     --color-success: var(--success);
     --color-failure: var(--destructive);
+    --color-shadow: var(--shadow);
+    --shadow-xs: 0 1px 2px --alpha(var(--shadow) / 35%);
+    --shadow-sm:
+        0 1px 2px --alpha(var(--shadow) / 35%),
+        0 2px 8px -2px --alpha(var(--shadow) / 30%);
+    --shadow-md:
+        0 4px 6px -1px var(--shadow, rgb(0 0 0 / 0.1)),
+        0 2px 4px -2px var(--shadow, rgb(0 0 0 / 0.1));
 }
 
 :root {
@@ -43,19 +51,16 @@
     --border: oklch(0.9 0.008 260);
     --ring: oklch(0.32 0.02 260);
     --ring: var(--accent);
-    --shadow-xs: 0 1px 2px oklch(0.24 0.02 260 / 12%);
-    --shadow-sm:
-        0 1px 2px oklch(0.24 0.02 260 / 10%),
-        0 2px 8px -2px oklch(0.24 0.02 260 / 9%);
+    --shadow: oklch(0.24 0.02 260);
     --success: var(--color-green-500);
     --skeletton: var(--color-gray-200);
-    --accent: var(--color-amber-600);
+    --accent: var(--color-amber-700);
 }
 
 .dark {
     --background: oklch(0.17 0.012 260);
     --foreground: oklch(0.93 0.006 260);
-    --muted-foreground: oklch(0.68 0.012 260);
+    --muted-foreground: oklch(0.60 0.012 260);
     --muted-background: oklch(0.9 0.003 260);
     --primary: oklch(0.92 0.008 260);
     --primary-foreground: oklch(0.21 0.015 260);
@@ -63,9 +68,7 @@
     --destructive-foreground: oklch(0.14 0.02 25);
     --border: oklch(0.3 0.012 260);
     --ring: var(--accent);
-    --shadow-xs: 0 1px 2px oklch(0.4 0 0 / 35%);
-    --shadow-sm:
-        0 1px 2px oklch(0.4 0 0 / 35%), 0 2px 8px -2px oklch(0.4 0 0 / 30%);
+    --shadow: oklch(0.85 0 0 / 65%);
     --success: var(--color-green-700);
     --skeletton: var(--color-gray-800);
     --accent: var(--color-amber-600);
@@ -76,6 +79,9 @@
         @apply bg-background font-sans text-foreground;
         accent-color: var(--accent);
     }
+    :focus-visible {
+        outline: solid medium var(--accent);
+    }
 
     h3 {
         @apply text-accent font-semibold;
@@ -85,11 +91,17 @@
         @apply flex cursor-pointer items-center justify-center text-sm font-medium whitespace-nowrap;
         @apply gap-1 rounded-md p-1;
         @apply border border-border;
-        @apply shadow-sm hover:shadow-md;
-        @apply disabled:cursor-default disabled:pointer-events-none disabled:opacity-50;
-        @apply text-foreground hover:bg-foreground/5 active:bg-foreground/15;
-        &.active {
-            @apply not-dark:bg-accent/20 text-accent;
+        @apply not-disabled:shadow-sm hover:shadow-md;
+        &:disabled {
+            @apply cursor-default pointer-events-none;
+            @apply bg-muted-background opacity-70;
+            @apply dark:bg-muted-background/5 dark:opacity-60;
+        }
+        @apply text-foreground hover:bg-foreground/5;
+
+        &.active, &:active {
+            @apply text-accent not-dark:shadow-none;
+            @apply not-dark:inset-shadow-sm inset-shadow-accent/30;
         }
     }
 }
@@ -97,10 +109,10 @@
 @layer components {
     .button-block {
         @apply flex gap-0;
-        > :not(last-child) {
+        > :not(:last-child) {
             @apply rounded-e-none border-e-0;
         }
-        > :not(first-child) {
+        > :not(:first-child) {
             @apply rounded-s-none border-s-0;
         }
         > :first-child {
