@@ -54,8 +54,8 @@ function upTime(start_time, end_time) {
             <thead class="table-header-group">
                 <tr>
                     <th class="table-cell">Id</th>
-                    <th class="table-cell">Name</th>
-                    <th class="hidden sm:table-cell">Pid</th>
+                    <th class="sm:table-cell hidden">Name</th>
+                    <th class="sm:table-cell hidden">Pid</th>
                     <th class="table-cell">Active</th>
                     <th class="table-cell">Status</th>
                     <th class="sm:table-cell hidden">Start time</th>
@@ -82,23 +82,25 @@ function upTime(start_time, end_time) {
                         1: null,
                         2: null,
                     }"
-                    role="link"
+                    :role="info === null ? 'placeholder' : 'link'"
                     tabindex="0"
                     :key="id"
                     :class="{ 'fx-appear': servicesInfo }"
                     class="table-row text-center hover:bg-foreground/5 cursor-pointer"
                     @click="
-                        $router.push({
-                            name: 'service',
-                            params: { id },
-                        })
+                        if (info !== null) {
+                            $router.push({
+                                name: 'service',
+                                params: { id },
+                            });
+                        }
                     "
                     @keydown.enter="(e) => e.target.click()"
                 >
                     <td aria-label="Id" class="table-cell font-mono">
                         {{ id }}
                     </td>
-                    <td aria-label="Name" class="table-cell font-mono">
+                    <td aria-label="Name" class="sm:table-cell hidden font-mono">
                         {{ serviceNameMap?.[id] ?? "?" }}
                     </td>
                     <td aria-label="Pid" class="hidden sm:table-cell font-mono">

@@ -95,6 +95,7 @@ function make_style(elt) {
     text-indent: 5em hanging each-line;
     text-wrap: wrap;
     background-clip: content-box;
+    overflow-wrap: break-word;
 }
 .log-item {
     @apply inline!;
@@ -149,7 +150,7 @@ function make_style(elt) {
 }
 </style>
 <template>
-    <div class="text-sm font-mono log-line fx-appear">
+    <div aria-label="log line" class="text-sm font-mono log-line fx-appear">
         <pre
             class="log-item"
             v-for="token in parsed"

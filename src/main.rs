@@ -20,13 +20,14 @@
 ** Author: Sylvain Fargier <fargier.sylvain@gmail.com>
 */
 
+use std::net::{IpAddr, Ipv4Addr};
 use std::{net::SocketAddr, sync::Arc};
 
 use anyhow::{Context, Result, anyhow};
 use clap::Parser;
 use ppm::api::ActionResult;
 use ppm::utils::pre_json::JsonPreParser;
-use ppm::{api::DEFAULT_SERVER_ADDR, utils::tracing_utils::tracing_init};
+use ppm::{api::get_server_addr, utils::tracing_utils::tracing_init};
 use salvo::hyper::body::Bytes;
 use salvo::prelude::*;
 use salvo::serve_static::static_embed;
@@ -40,6 +41,8 @@ mod client;
 mod pool;
 use crate::{client::Client, pool::Pool};
 
+const DEFAULT_WEBAPP_ADDR: SocketAddr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 3000);
+
 #[derive(rust_embed::RustEmbed)]
 #[folder = "src/app/dist"]
 struct Assets;
@@ -47,13 +50,13 @@ struct Assets;
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 pub struct Args {
-    #[arg(long, global = true, default_value_t = DEFAULT_SERVER_ADDR)]
+    #[arg(long, global = true, default_value_t = get_server_addr())]
     pub addr: SocketAddr,
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    tracing_init(std::io::stderr, None)?;
+    tracing_init(std::io::stdout, Some("info"))?;
     let args = Args::parse();
 
     let router = Router::new()
@@ -66,7 +69,12 @@ async fn main() -> Result<()> {
                 .get(static_embed::<Assets>().fallback("index.html")),
         );
 
-    let acceptor = TcpListener::new("0.0.0.0:3000").bind().await;
+    let addr = std::env::var("PPMWEB_LISTEN")
+        .ok()
+        .and_then(|x| x.parse::<SocketAddr>().ok())
+        .unwrap_or(DEFAULT_WEBAPP_ADDR);
+    let acceptor = TcpListener::new(addr).bind().await;
+    tracing::info!("starting ppm-web");
     Server::new(acceptor).serve(router).await;
     Ok(())
 }
@@ -168,9 +176,10 @@ async fn connect(req: &mut Request, res: &mut Response, depot: &Depot) -> Result
             StatusError::internal_server_error()
         })?
         .clone();
-    let addr = *depot
+    let addr = depot
         .get::<SocketAddr>("addr")
-        .unwrap_or(&DEFAULT_SERVER_ADDR);
+        .copied()
+        .unwrap_or_else(|_| get_server_addr());
     let remote_addr = req.remote_addr().clone();
     let is_raw = req.query::<String>("raw").is_some();
 

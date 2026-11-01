@@ -1,6 +1,18 @@
 
 # PPM Web UI
 
+Web User Interface for [PPM](https://github.gremory.org/ppm/).
+
+## Tests
+
+```bash
+# tests may be ran directly from cargo
+cargo test
+
+# to run `vitest` in watch mode
+cd src/app ; npm install && npx vitest --coverage
+```
+
 ## Development
 
 ```bash

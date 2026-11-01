@@ -3,29 +3,8 @@
 // SPDX-FileContributor: Author: Sylvain Fargier <fargier.sylvain@gmail.com>
 
 import { createApp } from "vue";
-import { createRouter, createWebHistory } from "vue-router";
 import "./style.css";
 import App from "./App.vue";
+import { makeRouter } from "./routes";
 
-import ServicesList from "./ServicesList.vue";
-import ServiceDetails from "./ServiceDetails.vue";
-import SchedulerDetails from "./SchedulerDetails.vue";
-import Resources from "./Resources.vue";
-import DaemonLogs from "./DaemonLogs.vue";
-
-const routes = [
-  { name: "list", path: "/", component: ServicesList },
-  {
-    name: "service",
-    path: "/service/:id",
-    component: ServiceDetails,
-    props: true,
-  },
-  { name: "scheduler", path: "/scheduler", component: SchedulerDetails },
-  { name: "resources", path: "/resources", component: Resources },
-  { name: "daemonlogs", path: "/daemonlogs", component: DaemonLogs },
-];
-
-createApp(App)
-  .use(createRouter({ history: createWebHistory(), routes }))
-  .mount("#app");
+createApp(App).use(makeRouter()).mount("#app");

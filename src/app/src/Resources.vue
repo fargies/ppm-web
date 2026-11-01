@@ -48,13 +48,13 @@ client.onMessage = (data) => {
                 ></RouterLink>
             </div>
         </template>
-        <table role="table" class="w-full px-3 table table-auto text-sm">
+        <table aria-label="resources info" class="w-full px-3 table table-auto text-sm">
             <thead class="table-header-group">
                 <tr class="table-row">
                     <th class="table-cell">Id</th>
                     <th class="hidden sm:table-cell">Name</th>
                     <th class="table-cell">CPU</th>
-                    <th class="table-cell">CPU time</th>
+                    <th class="hidden sm:table-cell">CPU time</th>
                     <th class="table-cell">I/O read</th>
                     <th class="table-cell">I/O write</th>
                     <th class="table-cell">Mem RSS</th>
@@ -71,36 +71,36 @@ client.onMessage = (data) => {
                     key="daemon-stats"
                     class="table-row skel-anim fx-appear text-center hover:bg-foreground/5"
                 >
-                    <td class="table-cell"></td>
-                    <td
+                    <td aria-label="Id" class="table-cell"></td>
+                    <td aria-label="Name"
                         class="hidden sm:table-cell font-mono text-muted-foreground"
                     >
                         &lt;PPM daemon&gt;
                     </td>
 
-                    <td class="table-cell">
+                    <td aria-label="CPU" class="table-cell">
                         {{ daemonStats?.cpu_usage?.toFixed(2) }}%
                     </td>
-                    <td class="table-cell">
+                    <td aria-label="CPU time" class="hidden sm:table-cell">
                         {{ formatDuration(daemonStats?.cpu_time) ?? "?" }}
                     </td>
-                    <td class="table-cell">
+                    <td aria-label="I/O read" class="table-cell">
                         <div>{{ formatBytes(daemonStats?.io_read) }}/sec</div>
                         <div>{{ formatBytes(daemonStats?.total_io_read) }}</div>
                     </td>
-                    <td class="table-cell">
+                    <td aria-label="I/O write" class="table-cell">
                         <div>{{ formatBytes(daemonStats?.io_write) }}/sec</div>
                         <div>
                             {{ formatBytes(daemonStats?.total_io_write) }}
                         </div>
                     </td>
-                    <td class="table-cell">
+                    <td aria-label="Mem RSS" class="table-cell">
                         {{ formatBytes(daemonStats?.mem_rss) }}
                     </td>
-                    <td class="table-cell">
+                    <td aria-label="Mem VSZ" class="table-cell">
                         {{ formatBytes(daemonStats?.mem_vsz) }}
                     </td>
-                    <td class="hidden sm:table-cell">
+                    <td aria-label="Uptime" class="hidden sm:table-cell">
                         {{ formatDuration(daemonStats?.uptime) }}
                     </td>
                 </tr>
@@ -130,50 +130,50 @@ client.onMessage = (data) => {
                     @keydown.enter="(e) => e.target.click()"
                 >
                     <template v-if="servicesStats && isNil(info?.uptime)">
-                        <td
+                        <td aria-label="Id"
                             class="table-cell font-mono text-muted-foreground/60"
                         >
                             {{ id ?? "" }}
                         </td>
-                        <td
+                        <td aria-label="Name"
                             class="hidden sm:table-cell font-mono text-muted-foreground/60"
                         >
                             {{ serviceNameMap?.[id] ?? "" }}
                         </td>
-                        <td class="table-cell"></td>
-                        <td class="table-cell"></td>
-                        <td class="table-cell"></td>
-                        <td class="table-cell"></td>
-                        <td class="table-cell"></td>
-                        <td class="table-cell"></td>
-                        <td class="hidden sm:table-cell"></td>
+                        <td aria-label="CPU" class="table-cell"></td>
+                        <td aria-label="CPU time" class="hidden sm:table-cell"></td>
+                        <td aria-label="I/O read" class="table-cell"></td>
+                        <td aria-label="I/O write" class="hidden sm:table-cell"></td>
+                        <td aria-label="Mem RSS" class="table-cell"></td>
+                        <td aria-label="Mem VSZ" class="table-cell"></td>
+                        <td aria-label="Uptime" class="hidden sm:table-cell"></td>
                     </template>
                     <template v-else>
-                        <td class="table-cell font-mono">{{ id ?? "" }}</td>
-                        <td class="hidden sm:table-cell font-mono">
+                        <td aria-label="Id" class="table-cell font-mono">{{ id ?? "" }}</td>
+                        <td aria-label="Name" class="hidden sm:table-cell font-mono">
                             {{ serviceNameMap?.[id] ?? "" }}
                         </td>
-                        <td class="table-cell">
+                        <td aria-label="CPU" class="table-cell">
                             {{ info?.cpu_usage?.toFixed(2) }}%
                         </td>
-                        <td class="table-cell">
+                        <td aria-label="CPU time" class="hidden sm:table-cell">
                             {{ formatDuration(info?.cpu_time) ?? "?" }}
                         </td>
-                        <td class="table-cell">
+                        <td aria-label="I/O read" class="table-cell">
                             <div>{{ formatBytes(info?.io_read) }}/sec</div>
                             <div>{{ formatBytes(info?.total_io_read) }}</div>
                         </td>
-                        <td class="table-cell">
+                        <td aria-label="I/O write" class="table-cell">
                             <div>{{ formatBytes(info?.io_write) }}/sec</div>
                             <div>{{ formatBytes(info?.total_io_write) }}</div>
                         </td>
-                        <td class="table-cell">
+                        <td aria-label="Mem RSS" class="table-cell">
                             {{ formatBytes(info?.mem_rss) }}
                         </td>
-                        <td class="table-cell">
+                        <td aria-label="Mem VSZ" class="table-cell">
                             {{ formatBytes(info?.mem_vsz) }}
                         </td>
-                        <td class="hidden sm:table-cell">
+                        <td aria-label="Uptime" class="hidden sm:table-cell">
                             {{ formatDuration(info?.uptime) }}
                         </td>
                     </template>

@@ -57,7 +57,7 @@ useInterval(5000, {
                 ></RouterLink>
             </div>
         </template>
-        <table role="table" class="w-full px-3 table table-auto text-sm">
+        <table aria-label="scheduler info" class="w-full px-3 table table-auto text-sm">
             <thead class="table-header-group">
                 <tr>
                     <th class="table-cell">Id</th>
@@ -94,14 +94,14 @@ useInterval(5000, {
                     "
                     @keydown.enter="(e) => e.target.click()"
                 >
-                    <td class="table-cell font-mono">{{ info?.id ?? "" }}</td>
-                    <td class="table-cell font-mono">
+                    <td aria-label="Id" class="table-cell font-mono">{{ info?.id ?? "" }}</td>
+                    <td aria-label="Name" class="table-cell font-mono">
                         {{ serviceNameMap?.[info?.id] ?? "" }}
                     </td>
-                    <td class="table-cell">
+                    <td aria-label="Event" class="table-cell">
                         {{ info?.event ?? "?" }}
                     </td>
-                    <td class="table-cell">
+                    <td aria-label="Scheduled Time" class="table-cell">
                         {{ formatDate(info?.instant) ?? "" }}
                     </td>
                 </tr>

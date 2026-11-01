@@ -6,10 +6,12 @@ defineProps({
 </script>
 <template>
     <div
+        role="status"
+        :aria-label="title"
         class="inline-block skel-anim py-1 px-3 border border-border rounded-md"
-        :class="{ 'skel': skel }"
+        :class="{ skel }"
     >
-        <p class="text-xs text-muted-foreground">{{ title }}</p>
+        <label class="text-xs text-muted-foreground">{{ title }}</label>
         <p class="text-sm flex justify-center align-middle text-foreground">
             <slot />
         </p>

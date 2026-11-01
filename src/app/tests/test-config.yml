@@ -1,0 +1,22 @@
+stats_interval: 3s
+services:
+  - name: test
+    command:
+      path: sleep
+      args: ["300"]
+  - name: periodic_write
+    command:
+      path: sh
+      args:
+        [
+          "-c",
+          "while true ; do dd if=/dev/zero of=/var/tmp/test bs=1 count=1048576; sleep 1; done",
+        ]
+  - id: 5
+    name: periodic
+    command:
+      path: echo
+      args: [world]
+    schedule: "*/15 * * * * *"
+logger:
+  path: /tmp/ppm

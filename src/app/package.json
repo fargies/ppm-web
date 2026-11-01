@@ -10,14 +10,19 @@
     "build": "vite build",
     "serve": "vite serve",
     "debug": "vite serve -w --mode dev --sourcemap true",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest"
   },
   "devDependencies": {
     "@types/luxon": "^3.7.6",
     "@vitejs/devtools": "^0.7.6",
     "@vitejs/plugin-vue": "^6.0.9",
+    "@vitest/coverage-v8": "^5.0.5",
+    "@vitest/browser-playwright": "^5.0.5",
+    "playwright": "^1.64.1",
     "vite": "^8.3.3",
-    "vite-plugin-vue-devtools": "^8.2.1"
+    "vite-plugin-vue-devtools": "^8.2.1",
+    "vitest": "^5.0.5",
+    "vitest-browser-vue": "^3.1.0"
   },
   "dependencies": {
     "@lucide/vue": "^1.52.0",
@@ -28,5 +33,8 @@
     "luxon": "^3.7.2",
     "tailwindcss": "^4.3.3",
     "vue-router": "^5.4.0"
+  },
+  "allowScripts": {
+    "fsevents@2.3.3": true
   }
 }

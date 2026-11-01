@@ -29,7 +29,14 @@ const { id, lines, follow, max_lines, paused } = defineProps({
 const emit = defineEmits(["update"]);
 watch(
     () => max_lines,
-    (max_lines) => drop_lines(max_lines),
+  (max_lines) => {
+    drop_lines(max_lines);
+    if (max_lines !== null && log_lines.value?.length < max_lines) {
+      /* re-fetch log  */
+      close?.();
+      close = log_stream();
+    }
+  },
 );
 watch(
     () => paused,

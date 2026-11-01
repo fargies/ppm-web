@@ -120,7 +120,7 @@ const interval = useInterval(5000, {
                 ></RouterLink>
             </div>
         </template>
-        <Collapsible :open="true">
+        <Collapsible aria-label="Controls" :open="true">
             <template #summary
                 ><span title="service controls">Controls</span></template
             >
@@ -157,7 +157,7 @@ const interval = useInterval(5000, {
                 </Button>
             </div>
         </Collapsible>
-        <Collapsible :open="true">
+        <Collapsible aria-label="Status" :open="true">
             <template #summary
                 ><div
                     title="service live status"
@@ -200,7 +200,7 @@ const interval = useInterval(5000, {
                 }}</ServiceInfoPart>
             </div>
         </Collapsible>
-        <Collapsible v-show="info?.pid">
+        <Collapsible aria-label="Resources" v-show="info?.pid">
             <template #summary
                 ><div
                     title="service resource usage statistics"
@@ -237,7 +237,7 @@ const interval = useInterval(5000, {
                 }}</ServiceInfoPart>
             </div>
         </Collapsible>
-        <Collapsible>
+        <Collapsible aria-label="Logs">
             <template #summary="{ open }">
                 <div title="service logs" class="grow flex justify-between">
                     Logs

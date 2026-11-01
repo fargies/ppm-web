@@ -17,3 +17,8 @@ tracing-subscriber = "0.3.23"
 
 [build-dependencies]
 anyhow = "1.0.104"
+
+[[test]]
+name = "vitest"
+path = "tests/vitest.rs"
+harness = false
