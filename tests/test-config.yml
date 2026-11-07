@@ -1,0 +1,12 @@
+stats_interval: 3s
+http_service: 0
+services:
+  - id: 0
+    name: ppm-web
+    command:
+      path: ../../target/debug/ppm-web
+      args:
+        - --unix-socket
+        - --idle-shutdown=10m
+logger:
+  path: /tmp/ppm

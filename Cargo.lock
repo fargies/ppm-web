@@ -1833,7 +1833,6 @@ dependencies = [
  "libc",
  "objc2-core-foundation",
  "objc2-core-services",
- "regex",
  "serde",
  "serde_json",
  "serde_yaml_ng",

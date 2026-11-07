@@ -20,8 +20,8 @@ args = [ "run" ]
 [tasks."serve:dev:ppm-daemon"]
 cwd = "deps/ppm"
 command = "cargo"
-args = [ "run", "--bin", "ppm-daemon" ]
-env = { "PPM_CONFIG" = "data/test-config.yml", "RUST_LOG" = "ppm::monitor::logger=warn,trace", "PPM_NO_SESSION" = "1" }
+args = [ "run", "--release", "--bin", "ppm-daemon" ]
+env = { "PPM_CONFIG" = "../../tests/test-config.yml", "RUST_LOG" = "ppm::monitor::logger=warn,trace", "PPM_NO_SESSION" = "1" }
 
 [tasks."serve:dev"]
 run_task = { name = [ "serve:dev:vite", "serve:dev:ppm-web", "serve:dev:ppm-daemon" ], parallel = true, fork = true }
