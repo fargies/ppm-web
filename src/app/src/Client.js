@@ -11,7 +11,10 @@ import { isNil } from "./utils";
 
 export let api_url;
 if (typeof __API_URL__ === "undefined") {
-  let url = new URL("ws", window.location.href);
+  let url = new URL(
+    `${typeof __BASE_PATH__ !== "undefined" ? __BASE_PATH__ : ""}/ws`,
+    window.location.origin,
+  );
   url.protocol.replace("http", "ws");
   api_url = url.href;
 } else {

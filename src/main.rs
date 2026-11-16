@@ -20,30 +20,24 @@
 ** Author: Sylvain Fargier <fargier.sylvain@gmail.com>
 */
 
-use anyhow::{Context, Result, anyhow};
+use anyhow::Result;
 use clap::Parser;
 use ppm::{
-    api::{ActionResult, get_server_addr},
-    utils::{libc::Dup, pre_json::JsonPreParser, serializers::human, tracing_utils::tracing_init},
+    api::get_server_addr,
+    utils::{libc::Dup, serializers::human, tracing_utils::tracing_init},
 };
 use salvo::{
-    async_trait,
-    hyper::body::Bytes,
-    logging::Logger,
-    prelude::*,
-    serve_static::static_embed,
+    async_trait, logging::Logger, prelude::*, serve_static::static_embed,
     trailing_slash::remove_slash,
-    websocket::{Message, WebSocket, WebSocketUpgrade},
 };
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
     os::fd::IntoRawFd,
-    sync::Arc,
     time::Duration,
 };
-use tokio::io::AsyncWriteExt;
 
 mod client;
+mod endpoints;
 mod pool;
 mod utils;
 use crate::{
@@ -70,23 +64,14 @@ pub struct Args {
     pub idle_shutdown: Duration,
 }
 
-pub struct PPMHoop {
-    logger: Logger,
-    idle_watch: IdleWatch,
-}
-
-impl PPMHoop {
-    pub fn new(idle_watch: IdleWatch) -> Self {
-        Self {
-            logger: Logger::new(),
-            idle_watch,
-        }
-    }
-}
+pub struct PPMHoop<H>(pub H);
 
 #[async_trait]
-impl Handler for PPMHoop {
-    #[tracing::instrument(name = "ppm-web", skip_all)]
+impl<H> Handler for PPMHoop<H>
+where
+    H: Handler,
+{
+    #[tracing::instrument(parent = None, name = "ppm-web:hoop", skip_all)]
     async fn handle(
         &self,
         req: &mut Request,
@@ -94,27 +79,27 @@ impl Handler for PPMHoop {
         res: &mut Response,
         ctrl: &mut FlowCtrl,
     ) {
-        self.logger.handle(req, depot, res, ctrl).await;
-        self.idle_watch.handle(req, depot, res, ctrl).await;
-        ctrl.call_next(req, depot, res).await;
+        self.0.handle(req, depot, res, ctrl).await;
     }
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    tracing_init(std::io::stdout, Some("info"))?;
+    tracing_init(std::io::stdout, Some("error,salvo_extra::logging=info,ppm_web=info,salvo_core::server=info,tungstenite=error,tokio_tungstenite=error"))?;
     let _span = tracing::info_span!(parent: None, "ppm-web").entered();
+
     let args = Args::parse();
     let idle_watch = IdleWatch::new(args.idle_shutdown);
 
     let router = Router::new()
+        .hoop(PPMHoop(Logger::new()))
         .hoop(
             affix_state::inject(Pool::<Client>::new(3))
                 .insert("addr", args.addr)
                 .insert("idle_watch", idle_watch.clone()),
         )
-        .hoop(PPMHoop::new(idle_watch.clone()))
-        .push(Router::with_path("ws").goal(connect))
+        .hoop(PPMHoop(idle_watch.clone()))
+        .push(Router::with_path("ws").goal(endpoints::connect))
         .push(
             Router::with_path("{*path}")
                 .hoop(remove_slash())
@@ -140,138 +125,4 @@ async fn main() -> Result<()> {
     };
 
     Ok(())
-}
-
-async fn ws_handle(
-    ws: &mut WebSocket,
-    pool: Arc<Pool<Client>>,
-    addr: SocketAddr,
-) -> anyhow::Result<()> {
-    while let Some(msg) = ws.recv().await {
-        let msg = msg.context("websocket error")?;
-        if msg.is_close() {
-            tracing::trace!("client closed");
-            return Ok(());
-        }
-
-        let mut client = pool
-            .acquire(&addr)
-            .await
-            .context("failed to acquire client")?;
-
-        let reply = client
-            .raw_invoke(msg.as_bytes())
-            .await
-            .context("failed to invoke method")?;
-        ws.send(Message::binary(Bytes::copy_from_slice(reply)))
-            .await?;
-    }
-    Ok(())
-}
-
-async fn ws_raw(
-    ws: &mut WebSocket,
-    pool: Arc<Pool<Client>>,
-    addr: SocketAddr,
-) -> anyhow::Result<()> {
-    /* destructure the client */
-    let Client {
-        stream,
-        read_buffer: JsonPreParser { mut buffer, .. },
-    } = pool
-        .acquire(&addr)
-        .await
-        .context("failed to acquire client")?
-        .into_inner()
-        .context("failed to extract client")?;
-    let mut stream = match stream {
-        Some(stream) => stream,
-        None => return Err(anyhow!("client closed")),
-    };
-
-    loop {
-        tokio::select! {
-            msg = ws.recv() => {
-                tracing::debug!("websocket msg received");
-                let msg = match msg {
-                    Some(msg) => msg.context("websocket error")?,
-                    None => {
-                        tracing::trace!("client closed");
-                        return Ok(())
-                    },
-                };
-                if msg.is_close() {
-                    tracing::trace!("client close message");
-                    return Ok(());
-                }
-                tracing::debug!("websocket msg sending");
-                stream.write_all(msg.as_bytes()).await?;
-                tracing::debug!("websocket msg sent");
-            }
-            ret = stream.readable() => {
-                ret?;
-                tracing::debug!("remote readable");
-                buffer.clear();
-                match
-                stream.try_read_buf(&mut buffer) {
-                    Ok(0) => return Err(anyhow!("remote connection closed")),
-                    Ok(_) => (),
-                    Err(ref e) if e.kind() == tokio::io::ErrorKind::WouldBlock => {
-                        continue;
-                    }
-                    Err(e) => {
-                        return Err(e.into());
-                    }
-                }
-                ws.send(Message::binary(Bytes::copy_from_slice(buffer.as_slice()))).await?;
-            }
-        }
-    }
-    // Ok(())
-}
-
-#[handler]
-async fn connect(req: &mut Request, res: &mut Response, depot: &Depot) -> Result<(), StatusError> {
-    let pool: Arc<Pool<Client>> = depot
-        .get_typed::<Arc<Pool<Client>>>()
-        .map_err(|_| {
-            tracing::error!("failed to acquire pool");
-            StatusError::internal_server_error()
-        })?
-        .clone();
-    let addr = depot
-        .get::<SocketAddr>("addr")
-        .copied()
-        .unwrap_or_else(|_| get_server_addr());
-    let idle_watch = depot.get::<IdleWatch>("idle_watch").cloned().ok();
-    let remote_addr = req.remote_addr().clone();
-    let is_raw = req.query::<String>("raw").is_some();
-
-    WebSocketUpgrade::new()
-        .upgrade(req, res, async move |mut ws| {
-            let _token = match idle_watch {
-                Some(idle_watch) => Some(idle_watch.token().await),
-                None => None,
-            };
-            tracing::trace!(remote_addr=?remote_addr, is_raw, "websocket connected");
-            let ret = if is_raw {
-                ws_raw(&mut ws, pool, addr).await
-            } else {
-                ws_handle(&mut ws, pool, addr).await
-            };
-            if let Err(err) = ret {
-                tracing::error!(?err, "websocket error");
-                let _ = ws
-                    .send(Message::binary(
-                        serde_json::to_vec(&ActionResult::<()>::Err(format!(
-                            "server error: {err:?}"
-                        )))
-                        .unwrap(),
-                    ))
-                    .await;
-            };
-            let _ = ws.close().await;
-            tracing::trace!(remote_addr=?remote_addr, "websocket closed");
-        })
-        .await
 }

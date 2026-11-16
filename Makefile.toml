@@ -38,9 +38,16 @@ env = { "PPM_CONFIG" = "../../src/app/tests/test-config.yml", "RUST_LOG" = "ppm:
 [tasks."serve:test"]
 run_task = { name = [ "serve:dev:ppm-web", "serve:test:ppm-daemon" ], parallel = true, fork = true }
 
+[tasks."build:ppm-web:app"]
+command = "npm"
+cwd = "src/app"
+args = [ "run", "build" ]
+
+
 [tasks."build:ppm-web"]
 command = "cargo"
 args = [ "build" ]
+dependencies = [ "build:ppm-web:app" ]
 
 [tasks."build:all"]
 run_task = { name = [ "build:ppm-web", "build:ppm" ], parallel = true, fork = true }

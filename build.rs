@@ -35,8 +35,8 @@ fn main() -> Result<()> {
         "failed to run npm"
     );
     assert!(
-        Command::new("npx")
-            .args(["vite", "build"])
+        Command::new("npm")
+            .args(["run", "build"])
             .current_dir("src/app")
             .status()?
             .success(),
