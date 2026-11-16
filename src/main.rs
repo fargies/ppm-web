@@ -121,7 +121,10 @@ async fn main() -> Result<()> {
     tracing::info!("starting ppm-web");
     let acceptor = {
         if let stdin = (0 as RawFd)
-            && stdin.is_listening()
+            && cfg_select! {
+                target_os = "linux" => stdin.is_listening(),
+                _ => stdin.is_socket()
+            }
         {
             tracing::info!("xinetd mode detected");
             inetd::make_acceptor(stdin.dup()?)?
