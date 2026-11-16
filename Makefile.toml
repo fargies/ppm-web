@@ -39,13 +39,11 @@ args = [ "build" ]
 
 [tasks."serve:test:ppm-daemon"]
 description = "Run a stub ppm-daemon server for tests"
-private = true
 extend = "serve:dev:ppm-daemon"
 env = { "PPM_CONFIG" = "../../src/app/tests/test-config.yml", "RUST_LOG" = "ppm::monitor::logger=warn,trace", "PPM_NO_SESSION" = "1" }
 
 [tasks."serve:test"]
 description = "Run a stub ppm-daemon server and backend for frontend tests"
-private = true
 run_task = { name = [ "serve:dev:ppm-web", "serve:test:ppm-daemon" ], parallel = true, fork = true }
 
 [tasks."build:ppm-web:app"]

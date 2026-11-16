@@ -24,6 +24,15 @@ use anyhow::{Result, ensure};
 use std::process::Command;
 
 fn main() -> Result<()> {
+    assert!(
+        Command::new("npx")
+            .args(["playwright", "install", "chromium-headless-shell"])
+            .current_dir("src/app")
+            .status()?
+            .success(),
+        "failed to install playwright"
+    );
+
     let status = Command::new("npm")
         .args(["test", "--", "--coverage", "--run", "--browser.headless"])
         .current_dir("src/app")
