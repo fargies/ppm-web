@@ -24,7 +24,11 @@ use anyhow::Result;
 use clap::Parser;
 use ppm::{
     api::get_server_addr,
-    utils::{libc::Dup, serializers::human, tracing_utils::tracing_init},
+    utils::{
+        libc::{Dup, SocketTrait},
+        serializers::human,
+        tracing_utils::tracing_init,
+    },
 };
 use salvo::{
     async_trait, logging::Logger, prelude::*, serve_static::static_embed,
@@ -32,7 +36,7 @@ use salvo::{
 };
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
-    os::fd::IntoRawFd,
+    os::fd::RawFd,
     time::Duration,
 };
 
@@ -43,7 +47,7 @@ mod utils;
 use crate::{
     client::Client,
     pool::Pool,
-    utils::{IdleWatch, UnixDatagramAcceptor},
+    utils::{IdleWatch, inetd},
 };
 
 const DEFAULT_WEBAPP_ADDR: SocketAddr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 3000);
@@ -58,8 +62,6 @@ struct Assets;
 pub struct Args {
     #[arg(long, global = true, default_value_t = get_server_addr())]
     pub addr: SocketAddr,
-    #[arg(long, default_value_t = false)]
-    pub unix_socket: bool,
     #[arg(long, value_parser = human::duration::parse, default_value = "0")]
     pub idle_shutdown: Duration,
 }
@@ -85,7 +87,12 @@ where
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    tracing_init(std::io::stdout, Some("error,salvo_extra::logging=info,ppm_web=info,salvo_core::server=info,tungstenite=error,tokio_tungstenite=error"))?;
+    tracing_init(
+        std::io::stdout,
+        Some(
+            "error,salvo_extra::logging=info,ppm_web=info,salvo_core::server=info,tungstenite=error,tokio_tungstenite=error",
+        ),
+    )?;
     let _span = tracing::info_span!(parent: None, "ppm-web").entered();
 
     let args = Args::parse();
@@ -112,17 +119,20 @@ async fn main() -> Result<()> {
         .unwrap_or(DEFAULT_WEBAPP_ADDR);
 
     tracing::info!("starting ppm-web");
-    if args.unix_socket {
-        let acceptor = UnixDatagramAcceptor::try_from(std::io::stdin().dup()?.into_raw_fd())?;
-        let server = Server::new(acceptor).max_connections(MAX_CONNECTIONS);
-        idle_watch.set_handle(server.handle()).await;
-        server.serve(router).await
-    } else {
-        let acceptor = TcpListener::new(addr).bind().await;
-        let server = Server::new(acceptor).max_connections(MAX_CONNECTIONS);
-        idle_watch.set_handle(server.handle()).await;
-        server.serve(router).await
+    let acceptor = {
+        if let stdin = (0 as RawFd)
+            && stdin.is_listening()
+        {
+            tracing::info!("xinetd mode detected");
+            inetd::make_acceptor(stdin.dup()?)?
+        } else {
+            TcpListener::new(addr).bind().await
+        }
     };
+
+    let server = Server::new(acceptor).max_connections(MAX_CONNECTIONS);
+    idle_watch.set_handle(server.handle()).await;
+    server.serve(router).await;
 
     Ok(())
 }

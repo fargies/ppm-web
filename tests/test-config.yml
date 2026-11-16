@@ -1,12 +1,14 @@
 stats_interval: 3s
-http_service: 0
 services:
   - id: 0
     name: ppm-web
+    listen: :8080
+    workdir: ../..
     command:
-      path: ../../target/debug/ppm-web
+      path: cargo
       args:
-        - --unix-socket
+        - run
+        - --
         - --idle-shutdown=10m
 logger:
   path: /tmp/ppm

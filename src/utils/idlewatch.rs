@@ -132,8 +132,7 @@ impl IdleWatchData {
         let mut guard = self.handles.lock().await;
         guard.timer_handle.take().inspect(JoinHandle::<()>::abort);
         guard.timer_handle = Some(tokio::spawn(
-            Self::timer_routine(Arc::downgrade(self))
-                .instrument(tracing::info_span!("ppm-web")),
+            Self::timer_routine(Arc::downgrade(self)).instrument(tracing::info_span!("ppm-web")),
         ));
     }
 
