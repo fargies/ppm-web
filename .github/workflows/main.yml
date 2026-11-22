@@ -1,0 +1,103 @@
+name: test
+
+on: [workflow_dispatch, push]
+
+env:
+  CARGO_TERM_COLOR: never
+  RUST_LOG_STYLE: never
+  RUST_LOG: trace
+
+concurrency:
+  # cancel branch jobs on new pushs
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-ubuntu-default:
+    name: test | default
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch sources
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+      - name: Build project
+        run: cargo build
+      - name: Run tests
+        run: cargo test
+      - name: Run clippy
+        run: cargo clippy -- -D warnings
+
+  build-ubuntu-release:
+    name: build | release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch sources
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+      - name: Build project
+        run: cargo build --release
+      - name: Deploy | Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries
+          path: |
+            target/release/ppm-web
+
+  build-ubuntu-coverage:
+    name: test | coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch sources
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+      - name: Install cargo-coverage
+        run: |
+          cargo install --git "https://github.com/fargies/cargo-coverage"
+          cargo install grcov
+          rustup component add llvm-tools
+      - name: Run tests with coverage
+        run: |
+          # compile ppm-launcher that is used in tests
+          RUSTFLAGS=-Cinstrument-coverage cargo build
+          cargo cover
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
+
+  build:
+    name: test | matrix
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Fetch sources
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+      - name: Build project
+        run: cargo build
+      - name: Run tests
+        run: cargo test -- --no-capture
+      - name: Run clippy
+        run: cargo clippy -- -D warnings
+
+  changelog:
+    name: test | changelog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-tags: true
+          fetch-depth: 0
+      - name: Generate ChangeLog
+        uses: docker://alpine:latest
+        env:
+          RUST_LOG: warn
+        with:
+          args: |
+            /bin/sh -c "printf '[safe]\ndirectory = *\n' > /etc/gitconfig && apk add git-cliff && git-cliff -u && echo Ok"
