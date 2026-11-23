@@ -16,7 +16,14 @@ export default defineConfig({
   define: { __API_URL__: `"ws://${process.env.PPMWEB_LISTEN}/ws"` },
   test: {
     coverage: {
-      provider: 'v8'
+      provider: "v8",
+      include: ["src/**/*.{js,ts,jsx,tsx,vue}"],
+      exclude: [
+        "src/**/*.test.*",
+        "src/**/*.spec.*",
+        "src/**/tests/**",
+        "src/**/__tests__/**",
+      ],
     },
     maxWorkers: 1,
     slowTestThreshold: 5000,
@@ -27,7 +34,6 @@ export default defineConfig({
       enabled: true,
       provider: playwright(),
       instances: [{ browser: "chromium" }],
-
     },
   },
 });
