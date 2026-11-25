@@ -1,24 +1,24 @@
 /*
-** Copyright (C) 2025 Sylvain Fargier
-**
-** This software is provided 'as-is', without any express or implied
-** warranty.  In no event will the authors be held liable for any damages
-** arising from the use of this software.
-**
-** Permission is granted to anyone to use this software for any purpose,
-** including commercial applications, and to alter it and redistribute it
-** freely, subject to the following restrictions:
-**
-** 1. The origin of this software must not be misrepresented; you must not
-**    claim that you wrote the original software. If you use this software
-**    in a product, an acknowledgment in the product documentation would be
-**    appreciated but is not required.
-** 2. Altered source versions must be plainly marked as such, and must not be
-**    misrepresented as being the original software.
-** 3. This notice may not be removed or altered from any source distribution.
-**
-** Author: Sylvain Fargier <fargier.sylvain@gmail.com>
-*/
+ ** Copyright (C) 2025 Sylvain Fargier
+ **
+ ** This software is provided 'as-is', without any express or implied
+ ** warranty.  In no event will the authors be held liable for any damages
+ ** arising from the use of this software.
+ **
+ ** Permission is granted to anyone to use this software for any purpose,
+ ** including commercial applications, and to alter it and redistribute it
+ ** freely, subject to the following restrictions:
+ **
+ ** 1. The origin of this software must not be misrepresented; you must not
+ **    claim that you wrote the original software. If you use this software
+ **    in a product, an acknowledgment in the product documentation would be
+ **    appreciated but is not required.
+ ** 2. Altered source versions must be plainly marked as such, and must not be
+ **    misrepresented as being the original software.
+ ** 3. This notice may not be removed or altered from any source distribution.
+ **
+ ** Author: Sylvain Fargier <fargier.sylvain@gmail.com>
+ */
 
 use anyhow::Result;
 use clap::Parser;
@@ -31,7 +31,7 @@ use ppm::{
     },
 };
 use salvo::{
-    async_trait, logging::Logger, prelude::*, serve_static::static_embed,
+    async_trait, logging::Logger, prelude::*, serve_static::static_embed, server::ServerHandle,
     trailing_slash::remove_slash,
 };
 use std::{
@@ -39,6 +39,7 @@ use std::{
     os::fd::RawFd,
     time::Duration,
 };
+use tokio::signal;
 
 mod client;
 mod endpoints;
@@ -135,7 +136,17 @@ async fn main() -> Result<()> {
 
     let server = Server::new(acceptor).max_connections(MAX_CONNECTIONS);
     idle_watch.set_handle(server.handle()).await;
+
+    tokio::spawn(shutdown_signal(server.handle()));
     server.serve(router).await;
 
     Ok(())
+}
+
+async fn shutdown_signal(handle: ServerHandle) {
+    signal::ctrl_c()
+        .await
+        .expect("failed to install Ctrl+C handler");
+    tracing::info!("termination request");
+    handle.stop_graceful(None);
 }

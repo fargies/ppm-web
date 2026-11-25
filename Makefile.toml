@@ -7,57 +7,71 @@ RUST_BACKTRACE = { unset = true }
 description = "Serve the frontend"
 cwd = "src/app"
 command = "npx"
-args = [ "vite", "serve" ]
+args = ["vite", "serve"]
 
 [tasks."serve:dev:vite"]
 description = "Serve the dev frontend"
 cwd = "src/app"
 command = "npx"
-args = [ "vite", "--", "serve", "-w", "--mode", "dev", "--sourcemap", "true" ]
+args = ["vite", "--", "serve", "-w", "--mode", "dev", "--sourcemap", "true"]
 
 [tasks."serve:dev:ppm-web"]
 description = "Serve the backend"
 command = "cargo"
-args = [ "run" ]
+args = ["run"]
 
 [tasks."serve:dev:ppm-daemon"]
 description = "Serve a stub ppm-daemon server"
 cwd = "deps/ppm"
 command = "cargo"
-args = [ "run", "--release", "--bin", "ppm-daemon" ]
-env = { "PPM_CONFIG" = "../../tests/test-config.yml", "RUST_LOG" = "ppm::monitor::logger=warn,trace", "PPM_NO_SESSION" = "1" }
+args = ["run", "--release", "--bin", "ppm-daemon"]
+env = { "PPM_CONFIG" = "../../tests/test-config.yml", "RUST_LOG" = "ppm::monitor::logger=warn,info", "PPM_NO_SESSION" = "1" }
 
 [tasks."serve:dev"]
 description = "Serve dev frontend and stub ppm-daemon server with inetd backend"
-run_task = { name = [ "serve:dev:vite", "serve:dev:ppm-daemon" ], parallel = true, fork = true }
+run_task = { name = [
+    "serve:dev:vite",
+    "serve:dev:ppm-daemon",
+], parallel = true, fork = true }
 
 [tasks."build:ppm"]
 description = "Build the ppm dependency"
 cwd = "deps/ppm"
 command = "cargo"
-args = [ "build" ]
+args = ["build"]
+
+[tasks."serve:test:ppm-web"]
+description = "Run the backend for tests"
+extend = "serve:dev:ppm-web"
+env = { "RUST_LOG" = "trace" }
 
 [tasks."serve:test:ppm-daemon"]
 description = "Run a stub ppm-daemon server for tests"
 extend = "serve:dev:ppm-daemon"
-env = { "PPM_CONFIG" = "../../src/app/tests/test-config.yml", "RUST_LOG" = "ppm::monitor::logger=warn,trace", "PPM_NO_SESSION" = "1" }
+env = { "PPM_CONFIG" = "../../src/app/tests/test-config.yml", "RUST_LOG" = "ppm::monitor::logger=warn,info", "PPM_NO_SESSION" = "1" }
 
 [tasks."serve:test"]
 description = "Run a stub ppm-daemon server and backend for frontend tests"
-run_task = { name = [ "serve:dev:ppm-web", "serve:test:ppm-daemon" ], parallel = true, fork = true }
+run_task = { name = [
+    "serve:test:ppm-web",
+    "serve:test:ppm-daemon",
+], parallel = true, fork = true }
 
 [tasks."build:ppm-web:app"]
 command = "npm"
 cwd = "src/app"
-args = [ "run", "build" ]
+args = ["run", "build"]
 
 
 [tasks."build:ppm-web"]
 description = "Build the frontend"
 command = "cargo"
-args = [ "build" ]
-dependencies = [ "build:ppm-web:app" ]
+args = ["build"]
+dependencies = ["build:ppm-web:app"]
 
 [tasks."build:all"]
 description = "Build everything"
-run_task = { name = [ "build:ppm-web", "build:ppm" ], parallel = true, fork = true }
+run_task = { name = [
+    "build:ppm-web",
+    "build:ppm",
+], parallel = true, fork = true }

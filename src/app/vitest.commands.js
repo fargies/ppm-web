@@ -80,8 +80,8 @@ export async function stopServer() {
       resolve();
     });
 
-    console.log("sending TERM signal");
-    process.kill(-server.pid, "SIGTERM");
+    console.log("sending INT signal");
+    process.kill(-server.pid, "SIGINT");
   });
 }
 
