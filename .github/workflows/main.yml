@@ -62,7 +62,7 @@ jobs:
         run: |
           # compile ppm-launcher that is used in tests
           RUSTFLAGS=-Cinstrument-coverage cargo build
-          cargo cover
+          cargo cover --grcov-keep-only 'src/*'
       - name: Coveralls
         uses: coverallsapp/github-action@v2
 
